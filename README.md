@@ -16,12 +16,13 @@ are supported.
 ### Read only the TOC
 
 ```rust
+use discid::DiscId;
+
 // Specifying the device is optional. If set to `None` a platform
 // specific default will be used.
 let device = Some("/dev/cdrom");
-let disc = DiscId::read(device);
+let disc = DiscId::read(device).expect("Reading disc failed");
 println!("ID : {}", disc.get_id());
-println!("MCN: {}", disc.get_mcn());
 ```
 
 ## Contribute

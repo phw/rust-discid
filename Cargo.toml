@@ -1,5 +1,5 @@
 [package]
-name = "discid-rs"
+name = "discid"
 version = "0.1.0"
 authors = ["Philipp Wolfer <ph.wolfer@gmail.com>"]
 edition = "2018"
