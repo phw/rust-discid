@@ -145,6 +145,13 @@ mod tests {
                        124833, 147278, 166336, 182560];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
         assert_eq!("Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-", disc.get_id());
+        assert_eq!("830abf0a", disc.get_freedb_id());
+        assert_eq!(
+            "1 10 206535 150 18901 39738 59557 79152 100126 124833 147278 166336 182560",
+            disc.get_toc_string());
+        assert_eq!(
+            "http://musicbrainz.org/cdtoc/attach?id=Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-&tracks=10&toc=1+10+206535+150+18901+39738+59557+79152+100126+124833+147278+166336+182560",
+            disc.get_submission_url());
     }
 
     #[test]
