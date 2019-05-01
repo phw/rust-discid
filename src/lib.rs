@@ -28,6 +28,9 @@ extern {
     fn discid_put(disc: *const size_t, first: c_int, last: c_int, offsets: *const c_int) -> c_int;
     fn discid_get_error_msg(disc: *const size_t) -> *const c_char;
     fn discid_get_id (disc: *const size_t) -> *const c_char;
+    fn discid_get_freedb_id (disc: *const size_t) -> *const c_char;
+    fn discid_get_toc_string (disc: *const size_t) -> *const c_char;
+    fn discid_get_submission_url (disc: *const size_t) -> *const c_char;
     fn discid_get_mcn (disc: *const size_t) -> *const c_char;
     fn discid_get_version_string() -> *const c_char;
     fn discid_get_default_device() -> *const c_char;
@@ -95,6 +98,21 @@ impl DiscId {
 
     pub fn get_id(&self) -> String {
         let str_ptr = unsafe { discid_get_id(self.disc) };
+        to_str(str_ptr)
+    }
+
+    pub fn get_freedb_id(&self) -> String {
+        let str_ptr = unsafe { discid_get_freedb_id(self.disc) };
+        to_str(str_ptr)
+    }
+
+    pub fn get_toc_string(&self) -> String {
+        let str_ptr = unsafe { discid_get_toc_string(self.disc) };
+        to_str(str_ptr)
+    }
+
+    pub fn get_submission_url(&self) -> String {
+        let str_ptr = unsafe { discid_get_submission_url(self.disc) };
         to_str(str_ptr)
     }
 
