@@ -47,14 +47,16 @@ impl DiscId {
         DiscId { disc}
     }
 
-    pub fn read(device: Option<&str>) -> Result<DiscId, String> {
+    pub fn read<S>(device: Option<S>) -> Result<DiscId, String>
+        where S: Into<String> {
         DiscId::read_features(device, FEATURE_READ)
     }
 
-    pub fn read_features(device: Option<&str>, features: u32) -> Result<DiscId, String> {
+    pub fn read_features<S>(device: Option<S>, features: u32) -> Result<DiscId, String>
+        where S: Into<String> {
         let disc = DiscId::new();
         let c_device: *const c_char = match device {
-            Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
+            Some(d) => CString::new(d.into()).expect("CString::new failed").into_raw(),
             None    => ptr::null(),
         };
         let status = unsafe { discid_read_sparse(disc.disc, c_device, features) };
