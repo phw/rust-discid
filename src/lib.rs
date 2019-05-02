@@ -184,6 +184,18 @@ mod tests {
     use super::{DiscId, Features};
 
     #[test]
+    #[should_panic(expected = "cannot open")]
+    fn test_read_invalid_device() {
+        DiscId::read(Some("notadevice")).expect("DiscId::read failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot open")]
+    fn test_read_features_invalid_device() {
+        DiscId::read_features(Some("notadevice"), Features::READ).expect("DiscId::read failed");
+    }
+
+    #[test]
     fn test_put() {
         let first = 1;
         let offsets = [206535, 150, 18901, 39738, 59557, 79152, 100126,
