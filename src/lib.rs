@@ -39,6 +39,7 @@ extern {
     fn discid_get_sectors (disc: *const size_t) -> c_int;
     fn discid_get_track_offset (disc: *const size_t, track_num: c_int) -> c_int;
     fn discid_get_track_length (disc: *const size_t, track_num: c_int) -> c_int;
+    fn discid_get_track_isrc (disc: *const size_t, track_num: c_int) -> *const c_char;
     fn discid_get_mcn (disc: *const size_t) -> *const c_char;
     fn discid_has_feature(feature: c_uint) -> c_int;
     fn discid_get_version_string() -> *const c_char;
@@ -157,6 +158,11 @@ impl DiscId {
 
     pub fn get_mcn(&self) -> String {
         let str_ptr = unsafe { discid_get_mcn(self.disc) };
+        to_str(str_ptr)
+    }
+
+    pub fn get_track_isrc(&self, track_num: i32) -> String {
+        let str_ptr = unsafe { discid_get_track_isrc(self.disc, track_num) };
         to_str(str_ptr)
     }
 }
