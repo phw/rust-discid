@@ -34,6 +34,11 @@ extern {
     fn discid_get_freedb_id (disc: *const size_t) -> *const c_char;
     fn discid_get_toc_string (disc: *const size_t) -> *const c_char;
     fn discid_get_submission_url (disc: *const size_t) -> *const c_char;
+    fn discid_get_first_track_num (disc: *const size_t) -> c_int;
+    fn discid_get_last_track_num (disc: *const size_t) -> c_int;
+    fn discid_get_sectors (disc: *const size_t) -> c_int;
+    fn discid_get_track_offset (disc: *const size_t, track_num: c_int) -> c_int;
+    fn discid_get_track_length (disc: *const size_t, track_num: c_int) -> c_int;
     fn discid_get_mcn (disc: *const size_t) -> *const c_char;
     fn discid_has_feature(feature: c_uint) -> c_int;
     fn discid_get_version_string() -> *const c_char;
@@ -81,7 +86,7 @@ impl DiscId {
 
     pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, String> {
         let disc = DiscId::new();
-        let last = (offsets.len() - 1) as i32;
+        let last = (offsets.len() - 1) as c_int;
         let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr()) };
         if status == 0 {
             Err(disc.get_error_msg())
@@ -130,6 +135,26 @@ impl DiscId {
         to_str(str_ptr)
     }
 
+    pub fn get_first_track_num(&self) -> i32 {
+        unsafe { discid_get_first_track_num(self.disc) }
+    }
+
+    pub fn get_last_track_num(&self) -> i32 {
+        unsafe { discid_get_last_track_num(self.disc) }
+    }
+
+    pub fn get_sectors(&self) -> i32 {
+        unsafe { discid_get_sectors(self.disc) }
+    }
+
+    pub fn get_track_offset(&self, track_num: i32) -> i32 {
+        unsafe { discid_get_track_offset(self.disc, track_num) }
+    }
+
+    pub fn get_track_length(&self, track_num: i32) -> i32 {
+        unsafe { discid_get_track_length(self.disc, track_num) }
+    }
+
     pub fn get_mcn(&self) -> String {
         let str_ptr = unsafe { discid_get_mcn(self.disc) };
         to_str(str_ptr)
@@ -158,14 +183,25 @@ mod tests {
         let offsets = [206535, 150, 18901, 39738, 59557, 79152, 100126,
                        124833, 147278, 166336, 182560];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        let last_track = disc.get_last_track_num();
         assert_eq!("Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-", disc.get_id());
         assert_eq!("830abf0a", disc.get_freedb_id());
+        assert_eq!(1, disc.get_first_track_num());
+        assert_eq!(10, last_track);
+        assert_eq!(206535, disc.get_sectors());
         assert_eq!(
             "1 10 206535 150 18901 39738 59557 79152 100126 124833 147278 166336 182560",
             disc.get_toc_string());
         assert_eq!(
             "http://musicbrainz.org/cdtoc/attach?id=Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-&tracks=10&toc=1+10+206535+150+18901+39738+59557+79152+100126+124833+147278+166336+182560",
             disc.get_submission_url());
+        for i in first..last_track+1 {
+            let offset = offsets[i as usize];
+            let next = if i < last_track { i + 1 } else { 0 };
+            let length = offsets[next as usize] - offset;
+            assert_eq!(offset, disc.get_track_offset(i), "track {} expected offset {}", i, offset);
+            assert_eq!(length, disc.get_track_length(i), "track {} expected length {}", i, length);
+        }
     }
 
     #[test]
