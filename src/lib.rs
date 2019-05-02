@@ -35,6 +35,7 @@ extern {
     fn discid_get_toc_string (disc: *const size_t) -> *const c_char;
     fn discid_get_submission_url (disc: *const size_t) -> *const c_char;
     fn discid_get_mcn (disc: *const size_t) -> *const c_char;
+    fn discid_has_feature(feature: c_uint) -> c_int;
     fn discid_get_version_string() -> *const c_char;
     fn discid_get_default_device() -> *const c_char;
 }
@@ -87,6 +88,11 @@ impl DiscId {
         } else {
             Ok(disc)
         }
+    }
+
+    pub fn has_feature(feature: Features) -> bool {
+        let result = unsafe { discid_has_feature(feature.bits()) };
+        result == 1
     }
 
     pub fn get_version_string() -> String {
@@ -144,7 +150,7 @@ fn to_str(c_buf: *const c_char) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::DiscId;
+    use super::{DiscId, Features};
 
     #[test]
     fn test_put() {
@@ -166,6 +172,11 @@ mod tests {
     fn test_get_default_device() {
         let device = DiscId::get_default_device();
         assert!(!device.is_empty());
+    }
+
+    #[test]
+    fn test_has_feature() {
+        assert_eq!(true, DiscId::has_feature(Features::READ));
     }
 
     #[test]
