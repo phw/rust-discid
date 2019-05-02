@@ -1,8 +1,9 @@
 use discid::DiscId;
 
 fn main() {
-    let offsets = [242457, 150, 44942, 61305, 72755, 96360, 130485, 147315, 164275,
-                   190702, 205412, 220437];
+    let offsets = [
+        242457, 150, 44942, 61305, 72755, 96360, 130485, 147315, 164275, 190702, 205412, 220437,
+    ];
     let result = DiscId::put(1, &offsets);
 
     match result {
@@ -10,7 +11,7 @@ fn main() {
         Err(e) => {
             eprintln!("{}", e);
             std::process::exit(1);
-        },
+        }
     }
 }
 

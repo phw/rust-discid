@@ -1,5 +1,5 @@
-use std::env;
 use discid::{DiscId, Features};
+use std::env;
 
 fn main() {
     // Read the device name from the command line or use the default.
@@ -15,7 +15,7 @@ fn main() {
         Err(e) => {
             eprintln!("{}", e);
             std::process::exit(1);
-        },
+        }
     }
 }
 
@@ -28,7 +28,7 @@ fn print_disc_info(disc: DiscId) {
     println!("Last track  : {}", disc.last_track_num());
     println!("Sectors     : {}\n", disc.sectors());
 
-    for i in 1..disc.last_track_num()+1 {
+    for i in 1..disc.last_track_num() + 1 {
         println!("Track #{}", i);
         println!("    ISRC   : {}", disc.track_isrc(i));
         println!("    Offset : {}", disc.track_offset(i));
