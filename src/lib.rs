@@ -19,6 +19,9 @@ use std::os::raw::c_char;
 use libc::{c_int, c_uint, size_t};
 use std::ptr;
 
+#[macro_use]
+extern crate bitflags;
+
 #[link(name = "discid")]
 extern {
     fn discid_new() -> *const size_t;
@@ -36,9 +39,14 @@ extern {
     fn discid_get_default_device() -> *const c_char;
 }
 
-pub const FEATURE_READ: u32 = 1 << 0;
-pub const FEATURE_MCN:  u32 = 1 << 1;
-pub const FEATURE_ISRC: u32 = 1 << 2;
+bitflags! {
+    pub struct Features: u32 {
+        const READ = 1 << 0;
+        const MCN  = 1 << 1;
+        const ISRC = 1 << 2;
+        const ALL  = Self::READ.bits | Self::MCN.bits | Self::ISRC.bits;
+    }
+}
 
 pub struct DiscId {
     disc: *const size_t,
@@ -52,17 +60,17 @@ impl DiscId {
 
     pub fn read<S>(device: Option<S>) -> Result<DiscId, String>
         where S: Into<String> {
-        DiscId::read_features(device, FEATURE_READ)
+        DiscId::read_features(device, Features::READ)
     }
 
-    pub fn read_features<S>(device: Option<S>, features: u32) -> Result<DiscId, String>
+    pub fn read_features<S>(device: Option<S>, features: Features) -> Result<DiscId, String>
         where S: Into<String> {
         let disc = DiscId::new();
         let c_device: *const c_char = match device {
             Some(d) => CString::new(d.into()).expect("CString::new failed").into_raw(),
             None    => ptr::null(),
         };
-        let status = unsafe { discid_read_sparse(disc.disc, c_device, features) };
+        let status = unsafe { discid_read_sparse(disc.disc, c_device, features.bits()) };
         if status == 0 {
             Err(disc.get_error_msg())
         } else {

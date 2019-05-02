@@ -1,5 +1,5 @@
 use std::env;
-use discid::{DiscId, FEATURE_READ, FEATURE_MCN};
+use discid::{DiscId, Features};
 
 fn main() {
     // Read the device name from the command line or use the default.
@@ -8,7 +8,7 @@ fn main() {
         None => None,
     };
 
-    let result = DiscId::read_features(device, FEATURE_READ | FEATURE_MCN);
+    let result = DiscId::read_features(device, Features::READ | Features::MCN);
 
     match result {
         Ok(disc) => print_disc_info(disc),
