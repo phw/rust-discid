@@ -111,7 +111,7 @@ impl DiscId {
         to_str(version_ptr)
     }
 
-    pub fn get_error_msg(&self) -> String {
+    fn get_error_msg(&self) -> String {
         let str_ptr = unsafe { discid_get_error_msg(self.disc) };
         to_str(str_ptr)
     }
