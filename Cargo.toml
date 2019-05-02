@@ -10,6 +10,9 @@ keywords = ["musicbrainz", "discid", "audio", "bindings"]
 categories = ["api-bindings"]
 license = "LGPL-3.0-or-later"
 
+[badges]
+travis-ci = { repository = "phw/discid-rs" }
+
 [dependencies]
 bitflags = "1.0.4"
 libc = "0.2.0"

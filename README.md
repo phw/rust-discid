@@ -1,4 +1,5 @@
 # Rust bindings for MusicBrainz libdiscid
+[![Build Status](https://travis-ci.org/phw/discid-rs.svg?branch=master)](https://travis-ci.org/phw/discid-rs)
 
 ## About
 discid-rs provides Rust bindings for the MusicBrainz DiscID library [libdiscid](http://musicbrainz.org/doc/libdiscid).
