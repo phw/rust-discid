@@ -13,9 +13,20 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#![deny(
+    // missing_docs,
+    missing_debug_implementations,
+    missing_copy_implementations,
+    trivial_casts,
+    trivial_numeric_casts,
+    unstable_features,
+    unused_import_braces,
+    unused_qualifications
+)]
+
 use libc::{c_int, c_uint, size_t};
-use std::ffi::CStr;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
+use std::fmt;
 use std::os::raw::c_char;
 use std::ptr;
 
@@ -179,6 +190,12 @@ impl Drop for DiscId {
     }
 }
 
+impl fmt::Debug for DiscId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "DiscId {}", self.toc_string())
+    }
+}
+
 fn to_str(c_buf: *const c_char) -> String {
     let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
     let str_slice: &str = c_str.to_str().unwrap();
@@ -257,5 +274,13 @@ mod tests {
     fn test_version_string() {
         let version = DiscId::version_string();
         assert!(version.starts_with("libdiscid"));
+    }
+
+    #[test]
+    fn test_debug() {
+        let first = 1;
+        let offsets = [2000, 150, 1000];
+        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        assert_eq!("DiscId 1 2 2000 150 1000", format!("{:?}", disc));
     }
 }
