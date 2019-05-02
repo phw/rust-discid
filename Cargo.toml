@@ -3,6 +3,12 @@ name = "discid"
 version = "0.1.0"
 authors = ["Philipp Wolfer <ph.wolfer@gmail.com>"]
 edition = "2018"
+description = "Bindings for MusicBrainz libdiscid"
+repository = "https://github.com/phw/discid-rs"
+readme = "README.md"
+keywords = ["musicbrainz", "discid", "audio", "bindings"]
+categories = ["api-bindings"]
+license = "LGPL-3.0-or-later"
 
 [dependencies]
 bitflags = "1.0.4"
