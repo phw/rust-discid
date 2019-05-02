@@ -15,7 +15,7 @@ fn main() {
 }
 
 fn print_disc_info(disc: DiscId) {
-    println!("DiscId: {}", disc.get_id());
-    println!("TOC   : {}", disc.get_toc_string());
-    println!("\nSubmit via {}", disc.get_submission_url());
+    println!("DiscId: {}", disc.id());
+    println!("TOC   : {}", disc.toc_string());
+    println!("\nSubmit via {}", disc.submission_url());
 }

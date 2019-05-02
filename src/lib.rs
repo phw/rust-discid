@@ -79,7 +79,7 @@ impl DiscId {
         };
         let status = unsafe { discid_read_sparse(disc.disc, c_device, features.bits()) };
         if status == 0 {
-            Err(disc.get_error_msg())
+            Err(disc.error_msg())
         } else {
             Ok(disc)
         }
@@ -90,7 +90,7 @@ impl DiscId {
         let last = (offsets.len() - 1) as c_int;
         let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr()) };
         if status == 0 {
-            Err(disc.get_error_msg())
+            Err(disc.error_msg())
         } else {
             Ok(disc)
         }
@@ -101,67 +101,67 @@ impl DiscId {
         result == 1
     }
 
-    pub fn get_version_string() -> String {
+    pub fn version_string() -> String {
         let str_ptr = unsafe { discid_get_version_string() };
         to_str(str_ptr)
     }
 
-    pub fn get_default_device() -> String {
+    pub fn default_device() -> String {
         let version_ptr = unsafe { discid_get_default_device() };
         to_str(version_ptr)
     }
 
-    fn get_error_msg(&self) -> String {
+    fn error_msg(&self) -> String {
         let str_ptr = unsafe { discid_get_error_msg(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_id(&self) -> String {
+    pub fn id(&self) -> String {
         let str_ptr = unsafe { discid_get_id(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_freedb_id(&self) -> String {
+    pub fn freedb_id(&self) -> String {
         let str_ptr = unsafe { discid_get_freedb_id(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_toc_string(&self) -> String {
+    pub fn toc_string(&self) -> String {
         let str_ptr = unsafe { discid_get_toc_string(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_submission_url(&self) -> String {
+    pub fn submission_url(&self) -> String {
         let str_ptr = unsafe { discid_get_submission_url(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_first_track_num(&self) -> i32 {
+    pub fn first_track_num(&self) -> i32 {
         unsafe { discid_get_first_track_num(self.disc) }
     }
 
-    pub fn get_last_track_num(&self) -> i32 {
+    pub fn last_track_num(&self) -> i32 {
         unsafe { discid_get_last_track_num(self.disc) }
     }
 
-    pub fn get_sectors(&self) -> i32 {
+    pub fn sectors(&self) -> i32 {
         unsafe { discid_get_sectors(self.disc) }
     }
 
-    pub fn get_track_offset(&self, track_num: i32) -> i32 {
+    pub fn track_offset(&self, track_num: i32) -> i32 {
         unsafe { discid_get_track_offset(self.disc, track_num) }
     }
 
-    pub fn get_track_length(&self, track_num: i32) -> i32 {
+    pub fn track_length(&self, track_num: i32) -> i32 {
         unsafe { discid_get_track_length(self.disc, track_num) }
     }
 
-    pub fn get_mcn(&self) -> String {
+    pub fn mcn(&self) -> String {
         let str_ptr = unsafe { discid_get_mcn(self.disc) };
         to_str(str_ptr)
     }
 
-    pub fn get_track_isrc(&self, track_num: i32) -> String {
+    pub fn track_isrc(&self, track_num: i32) -> String {
         let str_ptr = unsafe { discid_get_track_isrc(self.disc, track_num) };
         to_str(str_ptr)
     }
@@ -201,30 +201,30 @@ mod tests {
         let offsets = [206535, 150, 18901, 39738, 59557, 79152, 100126,
                        124833, 147278, 166336, 182560];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
-        let last_track = disc.get_last_track_num();
-        assert_eq!("Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-", disc.get_id());
-        assert_eq!("830abf0a", disc.get_freedb_id());
-        assert_eq!(1, disc.get_first_track_num());
+        let last_track = disc.last_track_num();
+        assert_eq!("Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-", disc.id());
+        assert_eq!("830abf0a", disc.freedb_id());
+        assert_eq!(1, disc.first_track_num());
         assert_eq!(10, last_track);
-        assert_eq!(206535, disc.get_sectors());
+        assert_eq!(206535, disc.sectors());
         assert_eq!(
             "1 10 206535 150 18901 39738 59557 79152 100126 124833 147278 166336 182560",
-            disc.get_toc_string());
+            disc.toc_string());
         assert_eq!(
             "http://musicbrainz.org/cdtoc/attach?id=Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-&tracks=10&toc=1+10+206535+150+18901+39738+59557+79152+100126+124833+147278+166336+182560",
-            disc.get_submission_url());
+            disc.submission_url());
         for i in first..last_track+1 {
             let offset = offsets[i as usize];
             let next = if i < last_track { i + 1 } else { 0 };
             let length = offsets[next as usize] - offset;
-            assert_eq!(offset, disc.get_track_offset(i), "track {} expected offset {}", i, offset);
-            assert_eq!(length, disc.get_track_length(i), "track {} expected length {}", i, length);
+            assert_eq!(offset, disc.track_offset(i), "track {} expected offset {}", i, offset);
+            assert_eq!(length, disc.track_length(i), "track {} expected length {}", i, length);
         }
     }
 
     #[test]
-    fn test_get_default_device() {
-        let device = DiscId::get_default_device();
+    fn test_default_device() {
+        let device = DiscId::default_device();
         assert!(!device.is_empty());
     }
 
@@ -234,8 +234,8 @@ mod tests {
     }
 
     #[test]
-    fn test_get_version_string() {
-        let version = DiscId::get_version_string();
+    fn test_version_string() {
+        let version = DiscId::version_string();
         assert!(version.starts_with("libdiscid"));
     }
 }

@@ -22,7 +22,7 @@ use discid::DiscId;
 // specific default will be used.
 let device = Some("/dev/cdrom");
 let disc = DiscId::read(device).expect("Reading disc failed");
-println!("ID : {}", disc.get_id());
+println!("ID: {}", disc.id());
 ```
 
 ## Contribute
