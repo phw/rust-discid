@@ -4,7 +4,11 @@ use std::env;
 fn main() {
     // Read the device name from the command line or use the default.
     let arg1 = env::args().nth(1).unwrap_or(String::new());
-    let device = if !arg1.is_empty() { Some(&arg1[..]) } else { None };
+    let device = if !arg1.is_empty() {
+        Some(&arg1[..])
+    } else {
+        None
+    };
     let result = DiscId::read_features(device, Features::ALL);
 
     match result {

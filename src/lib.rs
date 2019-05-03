@@ -114,8 +114,7 @@ impl DiscId {
     /// let disc = DiscId::read(Some("/dev/sr1")).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
     /// ```
-    pub fn read(device: Option<&str>) -> Result<DiscId, String>
-    {
+    pub fn read(device: Option<&str>) -> Result<DiscId, String> {
         DiscId::read_features(device, Features::READ)
     }
 
@@ -144,13 +143,10 @@ impl DiscId {
     /// let disc = DiscId::read_features(None, features).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
     /// ```
-    pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, String>
-    {
+    pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, String> {
         let disc = DiscId::new();
         let c_device: *const c_char = match device {
-            Some(d) => CString::new(d)
-                .expect("CString::new failed")
-                .into_raw(),
+            Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
             None => ptr::null(),
         };
         let status = unsafe { discid_read_sparse(disc.disc, c_device, features.bits()) };
@@ -190,7 +186,6 @@ impl DiscId {
             Ok(disc)
         }
     }
-
 
     /// Check if a certain feature is implemented on the current platform.
     ///
