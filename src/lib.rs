@@ -30,48 +30,25 @@
     unused_qualifications
 )]
 
-use libc::{c_int, c_uint, size_t};
+use discid_sys::*;
 use std::error::Error;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::os::raw::c_char;
+use std::os::raw::c_int;
 use std::ptr;
 
 #[macro_use]
 extern crate bitflags;
-
-#[link(name = "discid")]
-extern "C" {
-    fn discid_new() -> *const size_t;
-    fn discid_free(disc: *const size_t);
-    // fn discid_read(disc: *const size_t, device: *const c_char) -> c_int;
-    fn discid_read_sparse(disc: *const size_t, device: *const c_char, features: c_uint) -> c_int;
-    fn discid_put(disc: *const size_t, first: c_int, last: c_int, offsets: *const c_int) -> c_int;
-    fn discid_get_error_msg(disc: *const size_t) -> *const c_char;
-    fn discid_get_id(disc: *const size_t) -> *const c_char;
-    fn discid_get_freedb_id(disc: *const size_t) -> *const c_char;
-    fn discid_get_toc_string(disc: *const size_t) -> *const c_char;
-    fn discid_get_submission_url(disc: *const size_t) -> *const c_char;
-    fn discid_get_first_track_num(disc: *const size_t) -> c_int;
-    fn discid_get_last_track_num(disc: *const size_t) -> c_int;
-    fn discid_get_sectors(disc: *const size_t) -> c_int;
-    fn discid_get_track_offset(disc: *const size_t, track_num: c_int) -> c_int;
-    fn discid_get_track_length(disc: *const size_t, track_num: c_int) -> c_int;
-    fn discid_get_track_isrc(disc: *const size_t, track_num: c_int) -> *const c_char;
-    fn discid_get_mcn(disc: *const size_t) -> *const c_char;
-    fn discid_has_feature(feature: c_uint) -> c_int;
-    fn discid_get_version_string() -> *const c_char;
-    fn discid_get_default_device() -> *const c_char;
-}
 
 bitflags! {
     /// Constants representing the features supported by libdiscid.
     ///
     /// See `DiscId::read_features()` for details.
     pub struct Features: u32 {
-        const READ = 1 << 0;
-        const MCN  = 1 << 1;
-        const ISRC = 1 << 2;
+        const READ = discid_feature_DISCID_FEATURE_READ;
+        const MCN  = discid_feature_DISCID_FEATURE_MCN;
+        const ISRC = discid_feature_DISCID_FEATURE_ISRC;
         const ALL  = Self::READ.bits | Self::MCN.bits | Self::ISRC.bits;
     }
 }
@@ -95,7 +72,7 @@ impl fmt::Display for DiscError {
 /// Use `DiscId::read`, `DiscId::read_features` or `DiscId::put` to initialize
 /// an instance of `DiscId`.
 pub struct DiscId {
-    disc: *const size_t,
+    disc: *mut discid_sys::DiscId,
 }
 
 impl DiscId {
@@ -194,7 +171,7 @@ impl DiscId {
     pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, DiscError> {
         let disc = DiscId::new();
         let last = (offsets.len() - 1) as c_int;
-        let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr()) };
+        let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr() as *mut c_int) };
         if status == 0 {
             Err(disc.error())
         } else {
