@@ -21,8 +21,8 @@
 
 #![deny(
     // missing_docs,
-    missing_debug_implementations,
-    missing_copy_implementations,
+    // missing_debug_implementations,
+    // missing_copy_implementations,
     trivial_casts,
     trivial_numeric_casts,
     unstable_features,
@@ -323,6 +323,10 @@ impl DiscId {
     //     let str_ptr = unsafe { discid_get_track_isrc(self.handle.as_ptr(), track_num) };
     //     to_str(str_ptr)
     // }
+
+    pub fn tracks(&self) -> TrackIter {
+        TrackIter::new(self.handle)
+    }
 }
 
 impl Drop for DiscId {
@@ -334,6 +338,59 @@ impl Drop for DiscId {
 impl fmt::Debug for DiscId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "DiscId {}", self.toc_string())
+    }
+}
+
+pub struct Track {
+    pub number: i32,
+    pub offset: i32,
+    pub sectors: i32,
+    pub isrc: String,
+}
+
+pub struct TrackIter {
+    handle: ptr::NonNull<discid_sys::DiscId>,
+    curr: i32,
+    first_track: i32,
+    last_track: i32,
+}
+
+impl TrackIter {
+    fn new(handle: ptr::NonNull<discid_sys::DiscId>) -> TrackIter {
+        let handle_ptr = handle.as_ptr();
+        let first_track = unsafe { discid_get_first_track_num(handle_ptr) };
+        let last_track = unsafe { discid_get_last_track_num(handle_ptr) };
+        TrackIter {
+            handle,
+            curr: first_track,
+            first_track,
+            last_track,
+        }
+    }
+
+    fn get_track(&self, track_num: i32) -> Track {
+        let handle_ptr = self.handle.as_ptr();
+        let isrc_ptr = unsafe { discid_get_track_isrc(handle_ptr, track_num) };
+        Track {
+            number: track_num,
+            offset: unsafe { discid_get_track_offset(handle_ptr, track_num) },
+            sectors: unsafe { discid_get_track_length(handle_ptr, track_num) },
+            isrc: to_str(isrc_ptr),
+        }
+    }
+}
+
+impl Iterator for TrackIter {
+    type Item = Track;
+
+    fn next(&mut self) -> Option<Track> {
+        let track_num = self.curr;
+        self.curr += 1;
+        if track_num <= self.last_track {
+            Some(self.get_track(track_num))
+        } else {
+            None
+        }
     }
 }
 
