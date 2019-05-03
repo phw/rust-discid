@@ -76,20 +76,16 @@ impl DiscId {
         DiscId { disc }
     }
 
-    pub fn read<S>(device: Option<S>) -> Result<DiscId, String>
-    where
-        S: Into<String>,
+    pub fn read(device: Option<&str>) -> Result<DiscId, String>
     {
         DiscId::read_features(device, Features::READ)
     }
 
-    pub fn read_features<S>(device: Option<S>, features: Features) -> Result<DiscId, String>
-    where
-        S: Into<String>,
+    pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, String>
     {
         let disc = DiscId::new();
         let c_device: *const c_char = match device {
-            Some(d) => CString::new(d.into())
+            Some(d) => CString::new(d)
                 .expect("CString::new failed")
                 .into_raw(),
             None => ptr::null(),
