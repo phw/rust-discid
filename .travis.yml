@@ -12,3 +12,6 @@ matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
+script:
+  - cargo test --verbose
+  - rustfmt --check --edition 2018 {examples,src}/*.rs
