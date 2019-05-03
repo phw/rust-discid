@@ -1,8 +1,8 @@
 # Rust bindings for MusicBrainz libdiscid
-[![Build Status](https://travis-ci.org/phw/discid-rs.svg?branch=master)](https://travis-ci.org/phw/discid-rs)
+[![Build Status](https://travis-ci.org/phw/rust-discid.svg?branch=master)](https://travis-ci.org/phw/rust-discid)
 
 ## About
-discid-rs provides Rust bindings for the MusicBrainz DiscID library [libdiscid](http://musicbrainz.org/doc/libdiscid).
+discid provides Rust bindings for the MusicBrainz DiscID library [libdiscid](http://musicbrainz.org/doc/libdiscid).
 It allows calculating DiscIDs (MusicBrainz and freedb) for Audio CDs. Additionally
 the library can extract the MCN/UPC/EAN and the ISRCs from disc.
 
@@ -26,16 +26,16 @@ println!("ID: {}", disc.id());
 ```
 
 ## Contribute
-The source code for discid-rs is available on
-[GitHub](https://github.com/phw/discid-rs).
+The source code for discid is available on
+[GitHub](https://github.com/phw/rust-discid).
 
 Please report any issues on the
-[issue tracker](https://github.com/phw/discid-rs/issues).
+[issue tracker](https://github.com/phw/rust-discid/issues).
 
 ## License
-discid-rs Copyright (c) 2019 by Philipp Wolfer <ph.wolfer@gmail.com>
+discid Copyright (c) 2019 by Philipp Wolfer <ph.wolfer@gmail.com>
 
-discid-rs is free software: you can redistribute it and/or modify
+discid is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
