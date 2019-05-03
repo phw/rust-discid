@@ -31,6 +31,7 @@
 )]
 
 use libc::{c_int, c_uint, size_t};
+use std::error::Error;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::os::raw::c_char;
@@ -75,6 +76,20 @@ bitflags! {
     }
 }
 
+/// This is returned on errors reading the disc or setting the TOC.
+#[derive(Debug)]
+pub struct DiscError {
+    reason: String,
+}
+
+impl Error for DiscError {}
+
+impl fmt::Display for DiscError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "DiscError: {}", self.reason)
+    }
+}
+
 /// `DiscId` holds information about a disc (TOC, MCN, ISRCs).
 ///
 /// Use `DiscId::read`, `DiscId::read_features` or `DiscId::put` to initialize
@@ -114,7 +129,7 @@ impl DiscId {
     /// let disc = DiscId::read(Some("/dev/sr1")).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
     /// ```
-    pub fn read(device: Option<&str>) -> Result<DiscId, String> {
+    pub fn read(device: Option<&str>) -> Result<DiscId, DiscError> {
         DiscId::read_features(device, Features::READ)
     }
 
@@ -143,7 +158,7 @@ impl DiscId {
     /// let disc = DiscId::read_features(None, features).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
     /// ```
-    pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, String> {
+    pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, DiscError> {
         let disc = DiscId::new();
         let c_device: *const c_char = match device {
             Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
@@ -151,7 +166,7 @@ impl DiscId {
         };
         let status = unsafe { discid_read_sparse(disc.disc, c_device, features.bits()) };
         if status == 0 {
-            Err(disc.error_msg())
+            Err(disc.error())
         } else {
             Ok(disc)
         }
@@ -176,12 +191,12 @@ impl DiscId {
     /// let disc = DiscId::put(first_track, &offsets).expect("DiscId::put() failed");
     /// assert_eq!("lSOVc5h6IXSuzcamJS1Gp4_tRuA-", disc.id());
     /// ```
-    pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, String> {
+    pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, DiscError> {
         let disc = DiscId::new();
         let last = (offsets.len() - 1) as c_int;
         let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr()) };
         if status == 0 {
-            Err(disc.error_msg())
+            Err(disc.error())
         } else {
             Ok(disc)
         }
@@ -234,9 +249,11 @@ impl DiscId {
         to_str(version_ptr)
     }
 
-    fn error_msg(&self) -> String {
+    fn error(&self) -> DiscError {
         let str_ptr = unsafe { discid_get_error_msg(self.disc) };
-        to_str(str_ptr)
+        DiscError {
+            reason: to_str(str_ptr),
+        }
     }
 
     /// The MusicBrainz disc ID.
