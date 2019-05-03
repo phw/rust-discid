@@ -76,9 +76,15 @@ pub struct DiscId {
 }
 
 impl DiscId {
-    fn new() -> DiscId {
+    fn new() -> Result<DiscId, DiscError> {
         let disc = unsafe { discid_new() };
-        DiscId { disc }
+        if disc.is_null() {
+            Err(DiscError {
+                reason: "discid_new() failed, could not allocate memory".to_string(),
+            })
+        } else {
+            Ok(DiscId { disc })
+        }
     }
 
     /// Read the disc in the given CD-ROM/DVD-ROM drive extracting only the TOC.
@@ -136,7 +142,7 @@ impl DiscId {
     /// println!("ID: {}", disc.id());
     /// ```
     pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, DiscError> {
-        let disc = DiscId::new();
+        let disc = DiscId::new()?;
         let c_device: *const c_char = match device {
             Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
             None => ptr::null(),
@@ -169,7 +175,7 @@ impl DiscId {
     /// assert_eq!("lSOVc5h6IXSuzcamJS1Gp4_tRuA-", disc.id());
     /// ```
     pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, DiscError> {
-        let disc = DiscId::new();
+        let disc = DiscId::new()?;
         let last = (offsets.len() - 1) as c_int;
         let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr() as *mut c_int) };
         if status == 0 {
