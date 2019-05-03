@@ -72,18 +72,20 @@ impl fmt::Display for DiscError {
 /// Use `DiscId::read`, `DiscId::read_features` or `DiscId::put` to initialize
 /// an instance of `DiscId`.
 pub struct DiscId {
-    disc: *mut discid_sys::DiscId,
+    handle: ptr::NonNull<discid_sys::DiscId>,
 }
 
 impl DiscId {
     fn new() -> Result<DiscId, DiscError> {
-        let disc = unsafe { discid_new() };
-        if disc.is_null() {
+        let handle = unsafe { discid_new() };
+        if handle.is_null() {
             Err(DiscError {
                 reason: "discid_new() failed, could not allocate memory".to_string(),
             })
         } else {
-            Ok(DiscId { disc })
+            Ok(DiscId {
+                handle: unsafe { ptr::NonNull::new_unchecked(handle) },
+            })
         }
     }
 
@@ -147,7 +149,7 @@ impl DiscId {
             Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
             None => ptr::null(),
         };
-        let status = unsafe { discid_read_sparse(disc.disc, c_device, features.bits()) };
+        let status = unsafe { discid_read_sparse(disc.handle.as_ptr(), c_device, features.bits()) };
         if status == 0 {
             Err(disc.error())
         } else {
@@ -177,7 +179,14 @@ impl DiscId {
     pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, DiscError> {
         let disc = DiscId::new()?;
         let last = (offsets.len() - 1) as c_int;
-        let status = unsafe { discid_put(disc.disc, first, last, offsets.as_ptr() as *mut c_int) };
+        let status = unsafe {
+            discid_put(
+                disc.handle.as_ptr(),
+                first,
+                last,
+                offsets.as_ptr() as *mut c_int,
+            )
+        };
         if status == 0 {
             Err(disc.error())
         } else {
@@ -233,7 +242,7 @@ impl DiscId {
     }
 
     fn error(&self) -> DiscError {
-        let str_ptr = unsafe { discid_get_error_msg(self.disc) };
+        let str_ptr = unsafe { discid_get_error_msg(self.handle.as_ptr()) };
         DiscError {
             reason: to_str(str_ptr),
         }
@@ -241,69 +250,69 @@ impl DiscId {
 
     /// The MusicBrainz disc ID.
     pub fn id(&self) -> String {
-        let str_ptr = unsafe { discid_get_id(self.disc) };
+        let str_ptr = unsafe { discid_get_id(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
 
     /// The FreeDB disc ID.
     pub fn freedb_id(&self) -> String {
-        let str_ptr = unsafe { discid_get_freedb_id(self.disc) };
+        let str_ptr = unsafe { discid_get_freedb_id(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
 
     /// Return a string representing CD Table Of Contents (TOC).
     pub fn toc_string(&self) -> String {
-        let str_ptr = unsafe { discid_get_toc_string(self.disc) };
+        let str_ptr = unsafe { discid_get_toc_string(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
 
     /// An URL for submitting the DiscID to MusicBrainz.
     pub fn submission_url(&self) -> String {
-        let str_ptr = unsafe { discid_get_submission_url(self.disc) };
+        let str_ptr = unsafe { discid_get_submission_url(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
 
     /// The number of the first track on this disc.
     pub fn first_track_num(&self) -> i32 {
-        unsafe { discid_get_first_track_num(self.disc) }
+        unsafe { discid_get_first_track_num(self.handle.as_ptr()) }
     }
 
     /// The number of the last track on this disc.
     pub fn last_track_num(&self) -> i32 {
-        unsafe { discid_get_last_track_num(self.disc) }
+        unsafe { discid_get_last_track_num(self.handle.as_ptr()) }
     }
 
     /// The length of the disc in sectors.
     pub fn sectors(&self) -> i32 {
-        unsafe { discid_get_sectors(self.disc) }
+        unsafe { discid_get_sectors(self.handle.as_ptr()) }
     }
 
     /// Returns the offset in sectors for a certain track number (starting at 1).
     pub fn track_offset(&self, track_num: i32) -> i32 {
-        unsafe { discid_get_track_offset(self.disc, track_num) }
+        unsafe { discid_get_track_offset(self.handle.as_ptr(), track_num) }
     }
 
     /// Returns the length (in sectors) for a certain track number (starting at 1).
     pub fn track_length(&self, track_num: i32) -> i32 {
-        unsafe { discid_get_track_length(self.disc, track_num) }
+        unsafe { discid_get_track_length(self.handle.as_ptr(), track_num) }
     }
 
     /// The media catalogue number on the disc, if present.
     pub fn mcn(&self) -> String {
-        let str_ptr = unsafe { discid_get_mcn(self.disc) };
+        let str_ptr = unsafe { discid_get_mcn(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
 
     /// Returns the ISRC for a certain track number (starting at 1).
     pub fn track_isrc(&self, track_num: i32) -> String {
-        let str_ptr = unsafe { discid_get_track_isrc(self.disc, track_num) };
+        let str_ptr = unsafe { discid_get_track_isrc(self.handle.as_ptr(), track_num) };
         to_str(str_ptr)
     }
 }
 
 impl Drop for DiscId {
     fn drop(&mut self) {
-        unsafe { discid_free(self.disc) }
+        unsafe { discid_free(self.handle.as_ptr()) }
     }
 }
 
