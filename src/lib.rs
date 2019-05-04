@@ -287,15 +287,15 @@ impl DiscId {
         unsafe { discid_get_sectors(self.handle.as_ptr()) }
     }
 
-    /// Returns the offset in sectors for a certain track number (starting at 1).
-    pub fn track_offset(&self, track_num: i32) -> i32 {
-        unsafe { discid_get_track_offset(self.handle.as_ptr(), track_num) }
-    }
-
-    /// Returns the length (in sectors) for a certain track number (starting at 1).
-    pub fn track_length(&self, track_num: i32) -> i32 {
-        unsafe { discid_get_track_length(self.handle.as_ptr(), track_num) }
-    }
+    // /// Returns the offset in sectors for a certain track number (starting at 1).
+    // pub fn track_offset(&self, track_num: i32) -> i32 {
+    //     unsafe { discid_get_track_offset(self.handle.as_ptr(), track_num) }
+    // }
+    //
+    // /// Returns the length (in sectors) for a certain track number (starting at 1).
+    // pub fn track_length(&self, track_num: i32) -> i32 {
+    //     unsafe { discid_get_track_length(self.handle.as_ptr(), track_num) }
+    // }
 
     /// The media catalogue number on the disc, if present.
     pub fn mcn(&self) -> String {
@@ -303,11 +303,11 @@ impl DiscId {
         to_str(str_ptr)
     }
 
-    /// Returns the ISRC for a certain track number (starting at 1).
-    pub fn track_isrc(&self, track_num: i32) -> String {
-        let str_ptr = unsafe { discid_get_track_isrc(self.handle.as_ptr(), track_num) };
-        to_str(str_ptr)
-    }
+    // /// Returns the ISRC for a certain track number (starting at 1).
+    // pub fn track_isrc(&self, track_num: i32) -> String {
+    //     let str_ptr = unsafe { discid_get_track_isrc(self.handle.as_ptr(), track_num) };
+    //     to_str(str_ptr)
+    // }
 }
 
 impl Drop for DiscId {
@@ -364,25 +364,25 @@ mod tests {
         assert_eq!(
             "http://musicbrainz.org/cdtoc/attach?id=Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-&tracks=10&toc=1+10+206535+150+18901+39738+59557+79152+100126+124833+147278+166336+182560",
             disc.submission_url());
-        for i in first..last_track + 1 {
-            let offset = offsets[i as usize];
-            let next = if i < last_track { i + 1 } else { 0 };
-            let length = offsets[next as usize] - offset;
-            assert_eq!(
-                offset,
-                disc.track_offset(i),
-                "track {} expected offset {}",
-                i,
-                offset
-            );
-            assert_eq!(
-                length,
-                disc.track_length(i),
-                "track {} expected length {}",
-                i,
-                length
-            );
-        }
+        // for i in first..last_track + 1 {
+        //     let offset = offsets[i as usize];
+        //     let next = if i < last_track { i + 1 } else { 0 };
+        //     let length = offsets[next as usize] - offset;
+        //     assert_eq!(
+        //         offset,
+        //         disc.track_offset(i),
+        //         "track {} expected offset {}",
+        //         i,
+        //         offset
+        //     );
+        //     assert_eq!(
+        //         length,
+        //         disc.track_length(i),
+        //         "track {} expected length {}",
+        //         i,
+        //         length
+        //     );
+        // }
     }
 
     #[test]

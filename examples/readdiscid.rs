@@ -29,10 +29,10 @@ fn print_disc_info(disc: DiscId) {
     println!("Last track  : {}", disc.last_track_num());
     println!("Sectors     : {}\n", disc.sectors());
 
-    for i in 1..disc.last_track_num() + 1 {
-        println!("Track #{}", i);
-        println!("    ISRC   : {}", disc.track_isrc(i));
-        println!("    Offset : {}", disc.track_offset(i));
-        println!("    Sectors: {}", disc.track_length(i));
-    }
+    // for i in 1..disc.last_track_num() + 1 {
+    //     println!("Track #{}", i);
+    //     println!("    ISRC   : {}", disc.track_isrc(i));
+    //     println!("    Offset : {}", disc.track_offset(i));
+    //     println!("    Sectors: {}", disc.track_length(i));
+    // }
 }
