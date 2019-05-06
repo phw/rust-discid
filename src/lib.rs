@@ -350,9 +350,62 @@ impl DiscId {
     //     to_str(str_ptr)
     // }
 
-    /// Return an iterator to access information about each track on the disc.
+    /// Returns an iterator to access information about each track on the disc.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use discid::DiscId;
+    ///
+    /// let offsets = [
+    ///    242457, 150, 44942, 61305, 72755, 96360, 130485, 147315, 164275, 190702, 205412, 220437,
+    /// ];
+    /// let disc = DiscId::put(1, &offsets).expect("DiscId::put() failed");
+    /// let track = disc.nth_track(7);
+    /// for track in disc.tracks() {
+    ///     println!("Track #{}", track.number);
+    ///     println!("    ISRC    : {}", track.isrc);
+    ///     println!("    Offset  : {}", track.offset);
+    ///     println!("    Sectors : {}", track.sectors);
+    /// }
+    /// ```
     pub fn tracks(&self) -> TrackIter {
         TrackIter::new(Rc::clone(&self.handle))
+    }
+
+    /// Returns a `Track` object for the nth track.
+    ///
+    /// The track number must be inside the range given by `first_track_num()`
+    /// and `last_track_num()`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `number` is out of bounds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use discid::DiscId;
+    ///
+    /// let offsets = [
+    ///    242457, 150, 44942, 61305, 72755, 96360, 130485, 147315, 164275, 190702, 205412, 220437,
+    /// ];
+    /// let disc = DiscId::put(1, &offsets).expect("DiscId::put() failed");
+    /// let track = disc.nth_track(7);
+    /// assert_eq!(7, track.number);
+    /// assert_eq!(147315, track.offset);
+    /// assert_eq!(16960, track.sectors);
+    /// ```
+    pub fn nth_track(&self, number: i32) -> Track {
+        let first = self.first_track_num();
+        let last = self.last_track_num();
+        if number < first || number > last {
+            panic!(
+                "track number out of bounds: given {}, expected between {} and {}",
+                number, first, last
+            );
+        }
+        get_track(Rc::clone(&self.handle), number)
     }
 }
 
@@ -375,6 +428,8 @@ pub struct Track {
     pub sectors: i32,
 
     /// ISRC for this track (might be empty).
+    ///
+    /// This will only bet set if `DiscId::read_features` is called with `Features::ISRC`.
     pub isrc: String,
 }
 
@@ -397,17 +452,6 @@ impl TrackIter {
             last_track,
         }
     }
-
-    fn get_track(&self, track_num: i32) -> Track {
-        let handle_ptr = self.handle.as_ptr();
-        let isrc_ptr = unsafe { discid_get_track_isrc(handle_ptr, track_num) };
-        Track {
-            number: track_num,
-            offset: unsafe { discid_get_track_offset(handle_ptr, track_num) },
-            sectors: unsafe { discid_get_track_length(handle_ptr, track_num) },
-            isrc: to_str(isrc_ptr),
-        }
-    }
 }
 
 impl Iterator for TrackIter {
@@ -417,10 +461,21 @@ impl Iterator for TrackIter {
         let track_num = self.curr;
         self.curr += 1;
         if track_num <= self.last_track {
-            Some(self.get_track(track_num))
+            Some(get_track(Rc::clone(&self.handle), track_num))
         } else {
             None
         }
+    }
+}
+
+fn get_track(handle: Rc<DiscIdHandle>, number: i32) -> Track {
+    let handle_ptr = handle.as_ptr();
+    let isrc_ptr = unsafe { discid_get_track_isrc(handle_ptr, number) };
+    Track {
+        number,
+        offset: unsafe { discid_get_track_offset(handle_ptr, number) },
+        sectors: unsafe { discid_get_track_length(handle_ptr, number) },
+        isrc: to_str(isrc_ptr),
     }
 }
 
@@ -504,7 +559,7 @@ mod tests {
     fn test_put_too_many_offsets() {
         let first = 1;
         let offsets: [i32; 101] = [0; 101];
-        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        DiscId::put(first, &offsets).expect("DiscId::put failed");
     }
 
     #[test]
@@ -512,7 +567,42 @@ mod tests {
     fn test_put_too_many_tracks() {
         let first = 11;
         let offsets: [i32; 101] = [0; 101];
+        DiscId::put(first, &offsets).expect("DiscId::put failed");
+    }
+
+    #[test]
+    fn test_nth_track() {
+        let first = 1;
+        let offsets = [
+            206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
+        ];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        let track = disc.nth_track(4);
+        let expected_offset = offsets[4];
+        let expected_sectors = offsets[5] - offsets[4];
+        assert_eq!(4, track.number);
+        assert_eq!("", track.isrc); // Always empty for DiscId::put
+        assert_eq!(
+            expected_offset, track.offset,
+            "track {} expected offset {}",
+            track.number, expected_offset
+        );
+        assert_eq!(
+            expected_sectors, track.sectors,
+            "track {} expected sectors {}",
+            track.number, expected_sectors
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "track number out of bounds: given 11, expected between 1 and 10")]
+    fn test_nth_track_panics() {
+        let first = 1;
+        let offsets = [
+            206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
+        ];
+        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        disc.nth_track(11);
     }
 
     #[test]
