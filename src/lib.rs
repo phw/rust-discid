@@ -213,7 +213,7 @@ impl DiscId {
         let offset_ptr: *mut c_int;
         let mut full_offsets: [c_int; 100];
 
-        if (first > 1 && last <= 99) {
+        if first > 1 && last <= 99 {
             // libdiscid always expects an array of 100 integers, no matter the track count.
             // If the first track is larger 1 empty tracks must be filled with 0.
             full_offsets = [0; 100];
@@ -383,7 +383,6 @@ pub struct Track {
 pub struct TrackIter {
     handle: Rc<DiscIdHandle>,
     curr: i32,
-    // first_track: i32,
     last_track: i32,
 }
 
@@ -395,7 +394,6 @@ impl TrackIter {
         TrackIter {
             handle,
             curr: first_track,
-            // first_track,
             last_track,
         }
     }
@@ -468,25 +466,25 @@ mod tests {
         assert_eq!(
             "http://musicbrainz.org/cdtoc/attach?id=Wn8eRBtfLDfM0qjYPdxrz.Zjs_U-&tracks=10&toc=1+10+206535+150+18901+39738+59557+79152+100126+124833+147278+166336+182560",
             disc.submission_url());
-        // for i in first..last_track + 1 {
-        //     let offset = offsets[i as usize];
-        //     let next = if i < last_track { i + 1 } else { 0 };
-        //     let length = offsets[next as usize] - offset;
-        //     assert_eq!(
-        //         offset,
-        //         disc.track_offset(i),
-        //         "track {} expected offset {}",
-        //         i,
-        //         offset
-        //     );
-        //     assert_eq!(
-        //         length,
-        //         disc.track_length(i),
-        //         "track {} expected length {}",
-        //         i,
-        //         length
-        //     );
-        // }
+        for track in disc.tracks() {
+            let offset = offsets[track.number as usize];
+            let next = if track.number < last_track {
+                track.number + 1
+            } else {
+                0
+            };
+            let length = offsets[next as usize] - offset;
+            assert_eq!(
+                offset, track.offset,
+                "track {} expected offset {}",
+                track.number, offset
+            );
+            assert_eq!(
+                length, track.sectors,
+                "track {} expected sectors {}",
+                track.number, length
+            );
+        }
     }
 
     #[test]
