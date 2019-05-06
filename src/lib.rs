@@ -549,6 +549,7 @@ mod tests {
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
         ];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        assert_eq!("ByBKvJM1hBL7XtvsPyYtIjlX0Bw-", disc.id());
         assert_eq!(3, disc.first_track_num());
         assert_eq!(12, disc.last_track_num());
         assert_eq!(206535, disc.sectors());
