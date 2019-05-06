@@ -162,6 +162,11 @@ impl DiscId {
     /// This function may be used if the TOC has been read earlier and you want to calculate
     /// the disc ID afterwards, without accessing the disc drive.
     ///
+    /// `first` is the track number of the first track (1-99).
+    /// The `offsets` parameter points to an array which contains the track offsets for each track.
+    /// The first element, `offsets[0]``, is the leadout track. It must contain the total number of
+    /// sectors on the disc. `offsets` must not be longer than 100 elements (leadout + 99 tracks).
+    ///
     /// # Examples:
     ///
     /// ```
@@ -178,15 +183,25 @@ impl DiscId {
     /// ```
     pub fn put(first: i32, offsets: &[i32]) -> Result<DiscId, DiscError> {
         let disc = DiscId::new()?;
-        let last = (offsets.len() - 1) as c_int;
-        let status = unsafe {
-            discid_put(
-                disc.handle.as_ptr(),
-                first,
-                last,
-                offsets.as_ptr() as *mut c_int,
-            )
-        };
+        let last = first + (offsets.len() as c_int) - 2;
+        let offset_ptr: *mut c_int;
+        let mut full_offsets: [c_int; 100];
+
+        if (first > 1 && last <= 99) {
+            // libdiscid always expects an array of 100 integers, no matter the track count.
+            // If the first track is larger 1 empty tracks must be filled with 0.
+            full_offsets = [0; 100];
+            full_offsets[0] = offsets[0]; // Total sectors on disc
+            full_offsets[first as usize..(last + 1) as usize].copy_from_slice(&offsets[1..]);
+            offset_ptr = full_offsets.as_ptr() as *mut c_int;
+        } else {
+            // In case the track count starts at 1 we do not have to copy the array.
+            // libdiscid will not read beyond the boundary of `last + 1`, which in our case
+            // equals `offsets.length`.
+            offset_ptr = offsets.as_ptr() as *mut c_int;
+        }
+
+        let status = unsafe { discid_put(disc.handle.as_ptr(), first, last, offset_ptr) };
         if status == 0 {
             Err(disc.error())
         } else {
@@ -383,6 +398,34 @@ mod tests {
         //         length
         //     );
         // }
+    }
+
+    #[test]
+    fn test_put_first_track_not_one() {
+        let first = 3;
+        let offsets = [
+            206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
+        ];
+        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+        assert_eq!(3, disc.first_track_num());
+        assert_eq!(12, disc.last_track_num());
+        assert_eq!(206535, disc.sectors());
+    }
+
+    #[test]
+    #[should_panic(expected = "Illegal track limits")]
+    fn test_put_too_many_offsets() {
+        let first = 1;
+        let offsets: [i32; 101] = [0; 101];
+        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "Illegal track limits")]
+    fn test_put_too_many_tracks() {
+        let first = 11;
+        let offsets: [i32; 101] = [0; 101];
+        let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
     }
 
     #[test]
