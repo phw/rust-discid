@@ -190,7 +190,7 @@ impl DiscId {
     ///
     /// `first` is the track number of the first track (1-99).
     /// The `offsets` parameter points to an array which contains the track offsets for each track.
-    /// The first element, `offsets[0]``, is the leadout track. It must contain the total number of
+    /// The first element, `offsets[0]`, is the leadout track. It must contain the total number of
     /// sectors on the disc. `offsets` must not be longer than 100 elements (leadout + 99 tracks).
     ///
     /// # Examples:
