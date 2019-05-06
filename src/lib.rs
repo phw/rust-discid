@@ -21,8 +21,8 @@
 
 #![deny(
     // missing_docs,
-    // missing_debug_implementations,
-    // missing_copy_implementations,
+    missing_debug_implementations,
+    missing_copy_implementations,
     trivial_casts,
     trivial_numeric_casts,
     unstable_features,
@@ -37,6 +37,7 @@ use std::fmt;
 use std::os::raw::c_char;
 use std::os::raw::c_int;
 use std::ptr;
+use std::rc::Rc;
 
 #[macro_use]
 extern crate bitflags;
@@ -67,12 +68,37 @@ impl fmt::Display for DiscError {
     }
 }
 
+#[derive(Debug)]
+struct DiscIdHandle {
+    real_handle: ptr::NonNull<discid_sys::DiscId>,
+}
+
+impl DiscIdHandle {
+    fn new(handle: *mut discid_sys::DiscId) -> DiscIdHandle {
+        unsafe {
+            DiscIdHandle {
+                real_handle: ptr::NonNull::new_unchecked(handle),
+            }
+        }
+    }
+
+    fn as_ptr(&self) -> *mut discid_sys::DiscId {
+        self.real_handle.as_ptr()
+    }
+}
+
+impl Drop for DiscIdHandle {
+    fn drop(&mut self) {
+        unsafe { discid_free(self.as_ptr()) }
+    }
+}
+
 /// `DiscId` holds information about a disc (TOC, MCN, ISRCs).
 ///
 /// Use `DiscId::read`, `DiscId::read_features` or `DiscId::put` to initialize
 /// an instance of `DiscId`.
 pub struct DiscId {
-    handle: ptr::NonNull<discid_sys::DiscId>,
+    handle: Rc<DiscIdHandle>,
 }
 
 impl DiscId {
@@ -84,7 +110,7 @@ impl DiscId {
             })
         } else {
             Ok(DiscId {
-                handle: unsafe { ptr::NonNull::new_unchecked(handle) },
+                handle: Rc::new(DiscIdHandle::new(handle)),
             })
         }
     }
@@ -324,14 +350,9 @@ impl DiscId {
     //     to_str(str_ptr)
     // }
 
+    /// Return an iterator to access information about each track on the disc.
     pub fn tracks(&self) -> TrackIter {
-        TrackIter::new(self.handle)
-    }
-}
-
-impl Drop for DiscId {
-    fn drop(&mut self) {
-        unsafe { discid_free(self.handle.as_ptr()) }
+        TrackIter::new(Rc::clone(&self.handle))
     }
 }
 
@@ -341,29 +362,40 @@ impl fmt::Debug for DiscId {
     }
 }
 
+/// Holds information about a single track
+#[derive(Debug)]
 pub struct Track {
+    /// Track number (1-99) of the track.
     pub number: i32,
+
+    /// Start offset in sectors.
     pub offset: i32,
+
+    /// Track length in sectors.
     pub sectors: i32,
+
+    /// ISRC for this track (might be empty).
     pub isrc: String,
 }
 
+/// Allows iterating over all tracks of a read disc.
+#[derive(Debug)]
 pub struct TrackIter {
-    handle: ptr::NonNull<discid_sys::DiscId>,
+    handle: Rc<DiscIdHandle>,
     curr: i32,
-    first_track: i32,
+    // first_track: i32,
     last_track: i32,
 }
 
 impl TrackIter {
-    fn new(handle: ptr::NonNull<discid_sys::DiscId>) -> TrackIter {
+    fn new(handle: Rc<DiscIdHandle>) -> TrackIter {
         let handle_ptr = handle.as_ptr();
         let first_track = unsafe { discid_get_first_track_num(handle_ptr) };
         let last_track = unsafe { discid_get_last_track_num(handle_ptr) };
         TrackIter {
             handle,
             curr: first_track,
-            first_track,
+            // first_track,
             last_track,
         }
     }
