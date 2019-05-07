@@ -471,7 +471,7 @@ fn to_str(c_buf: *const c_char) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{DiscId, Features};
+    use super::{DiscError, DiscId, Features, Track};
 
     #[test]
     #[should_panic(expected = "cannot open")]
@@ -613,5 +613,50 @@ mod tests {
         let offsets = [2000, 150, 1000];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
         assert_eq!("DiscId 1 2 2000 150 1000", format!("{:?}", disc));
+    }
+
+    #[test]
+    fn test_features() {
+        assert_eq!(3, (Features::READ | Features::MCN).bits());
+        assert_eq!(
+            Features::ALL,
+            Features::READ | Features::MCN | Features::ISRC
+        );
+    }
+
+    #[test]
+    fn test_track_debug() {
+        let track = Track {
+            number: 3,
+            offset: 57402,
+            sectors: 32960,
+            isrc: "DED831801578".to_string(),
+        };
+
+        assert_eq!(
+            "Track { number: 3, offset: 57402, sectors: 32960, isrc: \"DED831801578\" }",
+            format!("{:?}", track)
+        );
+    }
+
+    #[test]
+    fn test_error_fmt() {
+        let error = DiscError {
+            reason: "The message".to_string(),
+        };
+
+        assert_eq!("DiscError: The message", format!("{}", error));
+    }
+
+    #[test]
+    fn test_error_debug() {
+        let error = DiscError {
+            reason: "The message".to_string(),
+        };
+
+        assert_eq!(
+            "DiscError { reason: \"The message\" }",
+            format!("{:?}", error)
+        );
     }
 }
