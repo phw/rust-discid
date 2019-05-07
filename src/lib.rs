@@ -47,9 +47,9 @@ bitflags! {
     ///
     /// See `DiscId::read_features()` for details.
     pub struct Features: u32 {
-        const READ = discid_feature_DISCID_FEATURE_READ;
-        const MCN  = discid_feature_DISCID_FEATURE_MCN;
-        const ISRC = discid_feature_DISCID_FEATURE_ISRC;
+        const READ = discid_feature::DISCID_FEATURE_READ;
+        const MCN  = discid_feature::DISCID_FEATURE_MCN;
+        const ISRC = discid_feature::DISCID_FEATURE_ISRC;
     }
 }
 
@@ -235,6 +235,8 @@ impl DiscId {
     }
 
     /// Check if a certain feature is implemented on the current platform.
+    ///
+    /// This only works for single features, not bit masks with multiple features.
     ///
     /// See the [libdiscid feature matrix](https://musicbrainz.org/doc/libdiscid#Feature_Matrix)
     /// for a list of supported features per platform.
