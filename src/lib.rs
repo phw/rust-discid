@@ -328,27 +328,11 @@ impl DiscId {
         unsafe { discid_get_sectors(self.handle.as_ptr()) }
     }
 
-    // /// Returns the offset in sectors for a certain track number (starting at 1).
-    // pub fn track_offset(&self, track_num: i32) -> i32 {
-    //     unsafe { discid_get_track_offset(self.handle.as_ptr(), track_num) }
-    // }
-    //
-    // /// Returns the length (in sectors) for a certain track number (starting at 1).
-    // pub fn track_length(&self, track_num: i32) -> i32 {
-    //     unsafe { discid_get_track_length(self.handle.as_ptr(), track_num) }
-    // }
-
     /// The media catalogue number on the disc, if present.
     pub fn mcn(&self) -> String {
         let str_ptr = unsafe { discid_get_mcn(self.handle.as_ptr()) };
         to_str(str_ptr)
     }
-
-    // /// Returns the ISRC for a certain track number (starting at 1).
-    // pub fn track_isrc(&self, track_num: i32) -> String {
-    //     let str_ptr = unsafe { discid_get_track_isrc(self.handle.as_ptr(), track_num) };
-    //     to_str(str_ptr)
-    // }
 
     /// Returns an iterator to access information about each track on the disc.
     ///
