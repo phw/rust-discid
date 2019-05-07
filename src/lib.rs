@@ -50,7 +50,6 @@ bitflags! {
         const READ = discid_feature_DISCID_FEATURE_READ;
         const MCN  = discid_feature_DISCID_FEATURE_MCN;
         const ISRC = discid_feature_DISCID_FEATURE_ISRC;
-        const ALL  = Self::READ.bits | Self::MCN.bits | Self::ISRC.bits;
     }
 }
 
@@ -619,7 +618,7 @@ mod tests {
     fn test_features() {
         assert_eq!(3, (Features::READ | Features::MCN).bits());
         assert_eq!(
-            Features::ALL,
+            Features::all(),
             Features::READ | Features::MCN | Features::ISRC
         );
     }

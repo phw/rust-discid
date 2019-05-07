@@ -9,7 +9,7 @@ fn main() {
     } else {
         None
     };
-    let result = DiscId::read_features(device, Features::ALL);
+    let result = DiscId::read_features(device, Features::all());
 
     match result {
         Ok(disc) => print_disc_info(disc),
