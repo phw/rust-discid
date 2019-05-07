@@ -1,6 +1,7 @@
 # Rust bindings for MusicBrainz libdiscid
 [![Build Status](https://travis-ci.org/phw/rust-discid.svg?branch=master)](https://travis-ci.org/phw/rust-discid)
 [![crates.io](https://img.shields.io/crates/v/discid.svg)](https://crates.io/crates/discid)
+[![Documentation](https://docs.rs/discid/badge.svg)](https://docs.rs/discid)
 [![License](https://img.shields.io/crates/l/discid.svg)](https://crates.io/crates/discid)
 
 ## About
@@ -40,7 +41,7 @@ for track in disc.tracks() {
 }
 ```
 
-See the [API documentation](https://docs.rs/discid/latest/discid/) for details.
+See the [API documentation](https://docs.rs/discid) for details.
 Additional examples are available in the
 [examples/](https://github.com/phw/rust-discid/tree/master/examples) directory.
 
