@@ -14,10 +14,12 @@ matrix:
   fast_finish: true
 before_script:
 - rustup component add rustfmt
+- rustup component add clippy
 script:
 - cargo build
 - cargo test --verbose
 - cargo fmt --verbose --all -- --check
+- cargo clippy -- -D warnings
 deploy:
   provider: cargo
   token:
