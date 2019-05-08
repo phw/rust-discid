@@ -3,7 +3,7 @@ use std::env;
 
 fn main() {
     // Read the device name from the command line or use the default.
-    let arg1 = env::args().nth(1).unwrap_or(String::new());
+    let arg1 = env::args().nth(1).unwrap_or_default();
     let device = if !arg1.is_empty() {
         Some(&arg1[..])
     } else {
