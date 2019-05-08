@@ -466,8 +466,8 @@ fn get_track(handle: Rc<DiscIdHandle>, number: i32) -> Track {
 
 fn to_str(c_buf: *const c_char) -> String {
     let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
-    let str_slice: &str = c_str.to_str().unwrap();
-    str_slice.to_owned()
+    let str_slice = c_str.to_string_lossy();
+    str_slice.into_owned()
 }
 
 #[cfg(test)]
