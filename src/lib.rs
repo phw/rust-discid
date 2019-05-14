@@ -34,6 +34,7 @@ use discid_sys::*;
 use std::error::Error;
 use std::ffi::{CStr, CString};
 use std::fmt;
+use std::num::ParseIntError;
 use std::os::raw::c_char;
 use std::os::raw::c_int;
 use std::ptr;
@@ -64,6 +65,14 @@ impl Error for DiscError {}
 impl fmt::Display for DiscError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "DiscError: {}", self.reason)
+    }
+}
+
+impl From<ParseIntError> for DiscError {
+    fn from(err: ParseIntError) -> Self {
+        DiscError {
+            reason: format!("{}", err),
+        }
     }
 }
 
@@ -232,6 +241,54 @@ impl DiscId {
         } else {
             Ok(disc)
         }
+    }
+
+    /// Parses a TOC string and returns a [Disc] instance for it.
+    ///
+    /// This function can be used if you already have a TOC string like e.g.
+    /// `1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437`.
+    pub fn parse(toc: &str) -> Result<DiscId, DiscError> {
+        let mut i: usize = 0;
+        let mut first_track: c_int = 1;
+        let mut last_track: c_int = 1;
+        let mut offsets: [c_int; 100] = [0; 100];
+        for part in toc.split(' ') {
+            let parsed_int = part.parse::<c_int>()?;
+            if i == 0 {
+                first_track = parsed_int;
+            } else if i == 1 {
+                last_track = parsed_int;
+            } else if i > 1 {
+                if i > (last_track as usize + 2) || i > 99 + 2 {
+                    return Err(DiscError {
+                        reason: "TOC string contains too many offsets (max. 100)".to_string(),
+                    });
+                }
+
+                offsets[i - 2] = parsed_int;
+            }
+
+            i += 1;
+        }
+
+        if i < 3 {
+            return Err(DiscError {
+                reason: format!("Invalid TOC string {:?}", toc),
+            });
+        }
+
+        let offset_count = (i - 3) as c_int;
+        let track_count = last_track - first_track + 1;
+        if track_count != offset_count {
+            return Err(DiscError {
+                reason: format!(
+                    "Number of offsets {} does not match track count {}",
+                    offset_count, last_track
+                ),
+            });
+        }
+
+        DiscId::put(first_track, &offsets[0..(i - 2)])
     }
 
     /// Check if a certain feature is implemented on the current platform.
@@ -554,6 +611,76 @@ mod tests {
         let first = 11;
         let offsets: [i32; 101] = [0; 101];
         DiscId::put(first, &offsets).expect("DiscId::put failed");
+    }
+
+    #[test]
+    fn test_parse() {
+        let toc =
+            "1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437";
+        let disc = DiscId::parse(toc).expect("DiscId::parse failed");
+        assert_eq!("lSOVc5h6IXSuzcamJS1Gp4_tRuA-", disc.id());
+        assert_eq!(toc, disc.toc_string());
+    }
+
+    #[test]
+    fn test_parse_minimal() {
+        let toc = "1 1 44942 150";
+        let disc = DiscId::parse(toc).expect("DiscId::parse failed");
+        assert_eq!("ANJa4DGYN_ktpzOwvVPtcjwP7mE-", disc.id());
+        assert_eq!(toc, disc.toc_string());
+    }
+
+    #[test]
+    fn test_parse_first_track_not_one() {
+        let toc = "3 12 242457 150 18901 39738 59557 79152 100126 124833 147278 166336 182560";
+        let disc = DiscId::parse(toc).expect("DiscId::parse failed");
+        assert_eq!("fC1yNbC5bVjbvphqlAY9JyYoWEY-", disc.id());
+        assert_eq!(toc, disc.toc_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid digit found in string")]
+    fn test_parse_invalid_nan() {
+        let toc = "1 2 242457 150 a";
+        DiscId::parse(toc).expect("DiscId::parse failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "TOC string contains too many offsets")]
+    fn test_parseinvalid_too_many_offsets() {
+        let toc = "1 2 242457 150 200 300";
+        DiscId::parse(&toc).expect("DiscId::parse failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "TOC string contains too many offsets")]
+    fn test_parseinvalid_too_many_offsets_total() {
+        let mut indexes = vec!["0"; 103];
+        indexes[0] = "1";
+        indexes[1] = "100";
+        let toc = indexes.join(" ");
+        DiscId::parse(&toc).expect("DiscId::parse failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "Number of offsets 1 does not match track count 2")]
+    fn test_parse_invalid_missing_offsets() {
+        let toc = "1 2 242457 150";
+        DiscId::parse(toc).expect("DiscId::parse failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid TOC string")]
+    fn test_parse_invalid_not_enough_elements() {
+        let toc = "1";
+        DiscId::parse(toc).expect("DiscId::parse failed");
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot parse integer from empty string")]
+    fn test_parse_invalid_empty() {
+        let toc = "";
+        DiscId::parse(toc).expect("DiscId::parse failed");
     }
 
     #[test]
