@@ -60,6 +60,14 @@ pub struct DiscError {
     reason: String,
 }
 
+impl DiscError {
+    fn new(message: &str) -> Self {
+        DiscError {
+            reason: message.to_string(),
+        }
+    }
+}
+
 impl Error for DiscError {}
 
 impl fmt::Display for DiscError {
@@ -113,9 +121,9 @@ impl DiscId {
     fn new() -> Result<DiscId, DiscError> {
         let handle = unsafe { discid_new() };
         if handle.is_null() {
-            Err(DiscError {
-                reason: "discid_new() failed, could not allocate memory".to_string(),
-            })
+            Err(DiscError::new(
+                "discid_new() failed, could not allocate memory",
+            ))
         } else {
             Ok(DiscId {
                 handle: Rc::new(DiscIdHandle::new(handle)),
@@ -260,9 +268,9 @@ impl DiscId {
                 last_track = parsed_int;
             } else if i > 1 {
                 if i > (last_track as usize + 2) || i > 99 + 2 {
-                    return Err(DiscError {
-                        reason: "TOC string contains too many offsets (max. 100)".to_string(),
-                    });
+                    return Err(DiscError::new(
+                        "TOC string contains too many offsets (max. 100)",
+                    ));
                 }
 
                 offsets[i - 2] = parsed_int;
@@ -272,20 +280,16 @@ impl DiscId {
         }
 
         if i < 3 {
-            return Err(DiscError {
-                reason: format!("Invalid TOC string {:?}", toc),
-            });
+            return Err(DiscError::new(&format!("Invalid TOC string {:?}", toc)));
         }
 
         let offset_count = (i - 3) as c_int;
         let track_count = last_track - first_track + 1;
         if track_count != offset_count {
-            return Err(DiscError {
-                reason: format!(
-                    "Number of offsets {} does not match track count {}",
-                    offset_count, last_track
-                ),
-            });
+            return Err(DiscError::new(&format!(
+                "Number of offsets {} does not match track count {}",
+                offset_count, last_track
+            )));
         }
 
         DiscId::put(first_track, &offsets[0..(i - 2)])
@@ -342,9 +346,7 @@ impl DiscId {
 
     fn error(&self) -> DiscError {
         let str_ptr = unsafe { discid_get_error_msg(self.handle.as_ptr()) };
-        DiscError {
-            reason: to_str(str_ptr),
-        }
+        DiscError::new(&to_str(str_ptr))
     }
 
     /// The MusicBrainz disc ID.
@@ -768,20 +770,22 @@ mod tests {
     }
 
     #[test]
-    fn test_error_fmt() {
-        let error = DiscError {
-            reason: "The message".to_string(),
-        };
+    fn test_error_new() {
+        let message = "The message";
+        let error = DiscError::new(message);
 
+        assert_eq!(message, error.reason);
+    }
+
+    #[test]
+    fn test_error_fmt() {
+        let error = DiscError::new("The message");
         assert_eq!("DiscError: The message", format!("{}", error));
     }
 
     #[test]
     fn test_error_debug() {
-        let error = DiscError {
-            reason: "The message".to_string(),
-        };
-
+        let error = DiscError::new("The message");
         assert_eq!(
             "DiscError { reason: \"The message\" }",
             format!("{:?}", error)
