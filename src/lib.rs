@@ -251,7 +251,9 @@ impl DiscId {
         }
     }
 
-    /// Parses a TOC string and returns a [Disc] instance for it.
+    /// Parses a TOC string and returns a `DiscId` instance for it.
+    ///
+    /// The TOC string provided here must have the same format as returned by `DiscId::toc_string`.
     ///
     /// This function can be used if you already have a TOC string like e.g.
     /// `1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437`.
