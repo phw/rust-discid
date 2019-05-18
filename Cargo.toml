@@ -1,6 +1,6 @@
 [package]
 name = "discid"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Philipp Wolfer <ph.wolfer@gmail.com>"]
 edition = "2018"
 description = "Bindings for MusicBrainz libdiscid"
