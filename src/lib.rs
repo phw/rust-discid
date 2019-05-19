@@ -18,6 +18,17 @@
 //! `discid` provides bindings to the MusicBrainz [libdiscid](https://musicbrainz.org/doc/libdiscid)
 //! library. In addition to calculating the disc IDs you can also get advanced data from the
 //! audio CD such as MCN (media catalogue number) and per-track ISRCs.
+//!
+//! To get started see the documentation and examples of [`DiscId::read`], [`DiscId::read_features`],
+//! [`DiscId::put`] and [`DiscId::parse`].
+//!
+//! Details about the use and calculation of disc IDs can be found at the [MusicBrainz
+//! disc ID documentation](https://musicbrainz.org/doc/Disc_ID).
+//!
+//! [`DiscId::read`]: ./struct.DiscId.html#method.read
+//! [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
+//! [`DiscId::put`]: ./struct.DiscId.html#method.put
+//! [`DiscId::parse`]: ./struct.DiscId.html#method.parse
 
 #![deny(
     missing_docs,
@@ -304,6 +315,7 @@ impl DiscId {
     /// let toc = "1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437";
     /// let disc = DiscId::parse(toc).expect("DiscId::put() failed");
     /// assert_eq!("lSOVc5h6IXSuzcamJS1Gp4_tRuA-", disc.id());
+    /// assert_eq!(toc, disc.toc_string());
     /// ```
     ///
     /// [`toc_string`]: #method.toc_string
@@ -414,6 +426,18 @@ impl DiscId {
     }
 
     /// Return a string representing CD Table Of Contents (TOC).
+    ///
+    /// The TOC string is a list of integers separated by a single space character. The integers
+    /// represent (in order):
+    ///
+    /// - First track number (normally one)
+    /// - Last track number
+    /// - Lead-out track offset
+    /// - Up to 99 frame offsets
+    ///
+    /// See also [`DiscId::parse`] and the documentation for [Disc ID Calculation](https://musicbrainz.org/doc/Disc_ID_Calculation).
+    ///
+    /// [`DiscId::parse`]: #method.parse
     pub fn toc_string(&self) -> String {
         let str_ptr = unsafe { discid_get_toc_string(self.handle.as_ptr()) };
         to_str(str_ptr)
