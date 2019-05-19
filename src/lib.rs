@@ -46,7 +46,9 @@ extern crate bitflags;
 bitflags! {
     /// Constants representing the features supported by libdiscid.
     ///
-    /// See `DiscId::read_features()` for details.
+    /// See [`DiscId::read_features`] for details.
+    ///
+    /// [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
     pub struct Features: u32 {
         /// Read the CD TOC.
         ///
@@ -58,13 +60,17 @@ bitflags! {
         /// Read the MCN (aka barcode) information.
         ///
         /// Read the MCN field from the CD. Not all CDs provide this information.
-        /// Without this feature `DiscId::mcn()` will always return an empty string.
+        /// Without this feature [`DiscId::mcn`] will always return an empty string.
+        ///
+        /// [`DiscId::mcn`]: ./struct.DiscId.html#method.mcn
         const MCN  = discid_feature::DISCID_FEATURE_MCN;
 
         /// Supports reading the ISRCs per track.
         ///
         /// For each track read the ISRC encoded in the subchannel data. Not all CDs provide this
-        /// information.  Without this feature `Track::isrc` will always be an empty string.
+        /// information.  Without this feature [`Track::isrc`] will always be an empty string.
+        ///
+        /// [`Track::isrc`]: ./struct.Track.html#structfield.isrc
         const ISRC = discid_feature::DISCID_FEATURE_ISRC;
     }
 }
@@ -126,8 +132,13 @@ impl Drop for DiscIdHandle {
 
 /// `DiscId` holds information about a disc (TOC, MCN, ISRCs).
 ///
-/// Use `DiscId::read`, `DiscId::read_features`, `DiscId::put` or `DiscId::parse` to initialize
-/// an instance of `DiscId`.
+/// Use [`DiscId::read`], [`DiscId::read_features`], [`DiscId::put`] or [`DiscId::parse`]
+/// to initialize an instance of `DiscId`.
+///
+/// [`DiscId::read`]: #method.read
+/// [`DiscId::read_features`]: #method.read_features
+/// [`DiscId::put`]: #method.put
+/// [`DiscId::parse`]: #method.parse
 pub struct DiscId {
     handle: Rc<DiscIdHandle>,
 }
@@ -150,10 +161,10 @@ impl DiscId {
     ///
     /// This function reads the disc in the drive specified by the given device
     /// identifier. If the device is `None`, the default device, as returned by
-    /// `DiscId::default_device()`, is used.
+    /// [`DiscId::default_device`], is used.
     ///
     /// This function will only read the TOC, hence only the disc ID itself will be
-    /// available. Use `DiscId::read_features()` if you want to read also MCN and ISRCs.
+    /// available. Use [`DiscId::read_features`] if you want to read also MCN and ISRCs.
     ///
     /// # Examples
     ///
@@ -171,20 +182,23 @@ impl DiscId {
     /// let disc = DiscId::read(Some("/dev/sr1")).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
     /// ```
+    ///
+    /// [`DiscId::read_features`]: #method.read_features
+    /// [`DiscId::default_device`]: #method.default_device
     pub fn read(device: Option<&str>) -> Result<DiscId, DiscError> {
         DiscId::read_features(device, Features::READ)
     }
 
     /// Read the disc in the given CD-ROM/DVD-ROM drive with additional features.
     ///
-    /// This function is similar to `DiscId::read()` but allows to read information about MCN
+    /// This function is similar to [`DiscId::read`] but allows to read information about MCN
     /// and per-track ISRCs in addition to the normal TOC data.
     ///
-    /// The parameter `features` accepts a bitwise combination of values defined in `Features`.
-    /// `Features::READ` is always implied, so it is not necessary to specify it.
+    /// The parameter `features` accepts a bitwise combination of values defined in [`Features`].
+    /// [`Features::READ`] is always implied, so it is not necessary to specify it.
     ///
-    /// Reading MCN and ISRCs is not available on all platforms. You can use
-    /// `DiscId::has_feature()` to check if a specific feature is available. Passing unsupported
+    /// Reading MCN and ISRCs is not available on all platforms. You can use the
+    /// [`has_feature`] method to check if a specific feature is available. Passing unsupported
     /// features here will just be ignored.
     ///
     /// Note that reading MCN and ISRC data is significantly slower than just reading the TOC, so
@@ -204,6 +218,11 @@ impl DiscId {
     ///     println!("#{} ISRC: {}", track.number, track.isrc);
     /// }
     /// ```
+    ///
+    /// [`DiscId::read`]: #method.read
+    /// [`has_feature`]: #method.has_feature
+    /// [`Features`]: ./struct.Features.html
+    /// [`Features::READ`]: ./struct.Features.html#associatedconstant.READ
     pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, DiscError> {
         let disc = DiscId::new()?;
         let c_device: *const c_char = match device {
@@ -272,7 +291,7 @@ impl DiscId {
 
     /// Parses a TOC string and returns a `DiscId` instance for it.
     ///
-    /// The TOC string provided here must have the same format as returned by `DiscId::toc_string()`.
+    /// The TOC string provided here must have the same format as returned by [`toc_string`].
     ///
     /// This function can be used if you already have a TOC string like e.g.
     /// `1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437`.
@@ -286,6 +305,8 @@ impl DiscId {
     /// let disc = DiscId::parse(toc).expect("DiscId::put() failed");
     /// assert_eq!("lSOVc5h6IXSuzcamJS1Gp4_tRuA-", disc.id());
     /// ```
+    ///
+    /// [`toc_string`]: #method.toc_string
     pub fn parse(toc: &str) -> Result<DiscId, DiscError> {
         let mut i: usize = 0;
         let mut first_track: c_int = 1;
@@ -427,6 +448,8 @@ impl DiscId {
 
     /// Returns an iterator to access information about each track on the disc.
     ///
+    /// Returns an instance of [`Track`] for each track.
+    ///
     /// # Examples
     ///
     /// ```
@@ -443,18 +466,17 @@ impl DiscId {
     ///     println!("    Sectors : {}", track.sectors);
     /// }
     /// ```
+    ///
+    /// [`Track`]: ./struct.Track.html
     pub fn tracks(&self) -> TrackIter {
         TrackIter::new(Rc::clone(&self.handle))
     }
 
-    /// Returns a `Track` object for the nth track.
-    ///
-    /// The track number must be inside the range given by `first_track_num()`
-    /// and `last_track_num()`.
+    /// Returns a `Track` instance for the nth track.
     ///
     /// # Panics
-    ///
-    /// Panics if `number` is out of bounds.
+    /// Panics if `number` is outside the range given by [`first_track_num`]
+    /// and [`last_track_num`].
     ///
     /// # Examples
     ///
@@ -470,6 +492,9 @@ impl DiscId {
     /// assert_eq!(147315, track.offset);
     /// assert_eq!(16960, track.sectors);
     /// ```
+    ///
+    /// [`first_track_num`]: #method.first_track_num
+    /// [`last_track_num`]: #method.last_track_num
     pub fn nth_track(&self, number: i32) -> Track {
         let first = self.first_track_num();
         let last = self.last_track_num();
@@ -503,11 +528,18 @@ pub struct Track {
 
     /// ISRC for this track (might be empty).
     ///
-    /// This will only bet set if `DiscId::read_features` is called with `Features::ISRC`.
+    /// This will only bet set if [`DiscId::read_features`] is called with [`Features::ISRC`].
+    ///
+    /// [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
+    /// [`Features::ISRC`]: ./struct.Features.html#associatedconstant.ISRC
     pub isrc: String,
 }
 
 /// Allows iterating over all tracks of a read disc.
+///
+/// Returns an instance of [`Track`] for each track.
+///
+/// [`Track`]: ./struct.Track.html
 #[derive(Debug)]
 pub struct TrackIter {
     handle: Rc<DiscIdHandle>,
