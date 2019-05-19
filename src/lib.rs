@@ -20,7 +20,7 @@
 //! audio CD such as MCN (media catalogue number) and per-track ISRCs.
 
 #![deny(
-    // missing_docs,
+    missing_docs,
     missing_debug_implementations,
     missing_copy_implementations,
     trivial_casts,
@@ -48,8 +48,23 @@ bitflags! {
     ///
     /// See `DiscId::read_features()` for details.
     pub struct Features: u32 {
+        /// Read the CD TOC.
+        ///
+        /// This is supported on all platforms and indicates that only the
+        /// table of contents (TOC), from which the disc ID gets calculated,
+        /// will be read.
         const READ = discid_feature::DISCID_FEATURE_READ;
+
+        /// Read the MCN (aka barcode) information.
+        ///
+        /// Read the MCN field from the CD. Not all CDs provide this information.
+        /// Without this feature `DiscId::mcn()` will always return an empty string.
         const MCN  = discid_feature::DISCID_FEATURE_MCN;
+
+        /// Supports reading the ISRCs per track.
+        ///
+        /// For each track read the ISRC encoded in the subchannel data. Not all CDs provide this
+        /// information.  Without this feature `Track::isrc` will always be an empty string.
         const ISRC = discid_feature::DISCID_FEATURE_ISRC;
     }
 }
@@ -111,7 +126,7 @@ impl Drop for DiscIdHandle {
 
 /// `DiscId` holds information about a disc (TOC, MCN, ISRCs).
 ///
-/// Use `DiscId::read`, `DiscId::read_features` or `DiscId::put` to initialize
+/// Use `DiscId::read`, `DiscId::read_features`, `DiscId::put` or `DiscId::parse` to initialize
 /// an instance of `DiscId`.
 pub struct DiscId {
     handle: Rc<DiscIdHandle>,
@@ -183,7 +198,11 @@ impl DiscId {
     ///
     /// let features = Features::MCN | Features::ISRC;
     /// let disc = DiscId::read_features(None, features).expect("Reading disc failed");
-    /// println!("ID: {}", disc.id());
+    /// println!("ID : {}", disc.id());
+    /// println!("MCN: {}", disc.mcn());
+    /// for track in disc.tracks() {
+    ///     println!("#{} ISRC: {}", track.number, track.isrc);
+    /// }
     /// ```
     pub fn read_features(device: Option<&str>, features: Features) -> Result<DiscId, DiscError> {
         let disc = DiscId::new()?;
@@ -417,7 +436,6 @@ impl DiscId {
     ///    242457, 150, 44942, 61305, 72755, 96360, 130485, 147315, 164275, 190702, 205412, 220437,
     /// ];
     /// let disc = DiscId::put(1, &offsets).expect("DiscId::put() failed");
-    /// let track = disc.nth_track(7);
     /// for track in disc.tracks() {
     ///     println!("Track #{}", track.number);
     ///     println!("    ISRC    : {}", track.isrc);
