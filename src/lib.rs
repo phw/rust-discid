@@ -19,16 +19,27 @@
 //! library. In addition to calculating the disc IDs you can also get advanced data from the
 //! audio CD such as MCN (media catalogue number) and per-track ISRCs.
 //!
+//! The main interface for using this module are the [`DiscId::read`] and [`DiscId::put`] methods
+//! which both return an instance of [`DiscId`]. [`DiscId::read`] allows you to read the data
+//! from an actual CD drive while [`DiscId::put`] allows you to calculate the disc ID for a
+//! previously read CD TOC.
+//!
+//! Depending on the version of libdiscid and the operating system used additional features like
+//! reading the MCN or ISRCs from the disc might be available. You can check for supported
+//! features with [`DiscId::has_feature`].
+//!
 //! To get started see the documentation and examples of [`DiscId::read`], [`DiscId::read_features`],
 //! [`DiscId::put`] and [`DiscId::parse`].
 //!
 //! Details about the use and calculation of disc IDs can be found at the [MusicBrainz
 //! disc ID documentation](https://musicbrainz.org/doc/Disc_ID).
 //!
+//! [`DiscId`]: ./struct.DiscId.html
 //! [`DiscId::read`]: ./struct.DiscId.html#method.read
 //! [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
 //! [`DiscId::put`]: ./struct.DiscId.html#method.put
 //! [`DiscId::parse`]: ./struct.DiscId.html#method.parse
+//! [`DiscId::has_feature`]: ./struct.DiscId.html#method.has_feature
 
 #![deny(
     missing_docs,
@@ -68,9 +79,9 @@ bitflags! {
         /// will be read.
         const READ = discid_feature::DISCID_FEATURE_READ;
 
-        /// Read the MCN (aka barcode) information.
+        /// Read the MCN (aka barcode) information from the CD.
         ///
-        /// Read the MCN field from the CD. Not all CDs provide this information.
+        /// Not all CDs provide this information.
         /// Without this feature [`DiscId::mcn`] will always return an empty string.
         ///
         /// [`DiscId::mcn`]: ./struct.DiscId.html#method.mcn
@@ -141,7 +152,7 @@ impl Drop for DiscIdHandle {
     }
 }
 
-/// `DiscId` holds information about a disc (TOC, MCN, ISRCs).
+/// Provides information about a disc (disc ID, TOC, MCN, ISRCs etc.).
 ///
 /// Use [`DiscId::read`], [`DiscId::read_features`], [`DiscId::put`] or [`DiscId::parse`]
 /// to initialize an instance of `DiscId`.
@@ -425,7 +436,10 @@ impl DiscId {
         to_str(str_ptr)
     }
 
-    /// Return a string representing CD Table Of Contents (TOC).
+    /// Return a string representing CD table of contents (TOC).
+    ///
+    /// The TOC suitable as a value of the toc parameter when accessing the MusicBrainz
+    /// web service. This enables fuzzy searching when the actual disc ID is not found.
     ///
     /// The TOC string is a list of integers separated by a single space character. The integers
     /// represent (in order):
@@ -444,6 +458,9 @@ impl DiscId {
     }
 
     /// An URL for submitting the DiscID to MusicBrainz.
+    ///
+    /// The URL leads to an interactive disc submission wizard that guides the user through the
+    /// process of associating this disc ID with a release in the MusicBrainz database.
     pub fn submission_url(&self) -> String {
         let str_ptr = unsafe { discid_get_submission_url(self.handle.as_ptr()) };
         to_str(str_ptr)
@@ -465,6 +482,11 @@ impl DiscId {
     }
 
     /// The media catalogue number on the disc, if present.
+    ///
+    /// This will only bet set if [`DiscId::read_features`] is called with [`Features::MCN`].
+    ///
+    /// [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
+    /// [`Features::MCN`]: ./struct.Features.html#associatedconstant.MCN
     pub fn mcn(&self) -> String {
         let str_ptr = unsafe { discid_get_mcn(self.handle.as_ptr()) };
         to_str(str_ptr)
@@ -559,9 +581,7 @@ pub struct Track {
     pub isrc: String,
 }
 
-/// Allows iterating over all tracks of a read disc.
-///
-/// Returns an instance of [`Track`] for each track.
+/// Allows iterating over all [`Track`] instances of a read disc.
 ///
 /// [`Track`]: ./struct.Track.html
 #[derive(Debug)]
