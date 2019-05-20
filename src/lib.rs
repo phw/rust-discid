@@ -621,18 +621,18 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "cannot open")]
-    fn test_read_invalid_device() {
+    fn discid_read_invalid_device() {
         DiscId::read(Some("notadevice")).expect("DiscId::read failed");
     }
 
     #[test]
     #[should_panic(expected = "cannot open")]
-    fn test_read_features_invalid_device() {
+    fn discid_read_features_invalid_device() {
         DiscId::read_features(Some("notadevice"), Features::READ).expect("DiscId::read failed");
     }
 
     #[test]
-    fn test_put() {
+    fn discid_put() {
         let first = 1;
         let offsets = [
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
@@ -673,7 +673,7 @@ mod tests {
     }
 
     #[test]
-    fn test_put_first_track_not_one() {
+    fn discid_put_first_track_not_one() {
         let first = 3;
         let offsets = [
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
@@ -687,7 +687,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Illegal track limits")]
-    fn test_put_too_many_offsets() {
+    fn discid_put_too_many_offsets() {
         let first = 1;
         let offsets: [i32; 101] = [0; 101];
         DiscId::put(first, &offsets).expect("DiscId::put failed");
@@ -695,14 +695,14 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Illegal track limits")]
-    fn test_put_too_many_tracks() {
+    fn discid_put_too_many_tracks() {
         let first = 11;
         let offsets: [i32; 101] = [0; 101];
         DiscId::put(first, &offsets).expect("DiscId::put failed");
     }
 
     #[test]
-    fn test_parse() {
+    fn discid_parse() {
         let toc =
             "1 11 242457 150 44942 61305 72755 96360 130485 147315 164275 190702 205412 220437";
         let disc = DiscId::parse(toc).expect("DiscId::parse failed");
@@ -711,7 +711,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_minimal() {
+    fn discid_parse_minimal() {
         let toc = "1 1 44942 150";
         let disc = DiscId::parse(toc).expect("DiscId::parse failed");
         assert_eq!("ANJa4DGYN_ktpzOwvVPtcjwP7mE-", disc.id());
@@ -719,7 +719,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_first_track_not_one() {
+    fn discid_parse_first_track_not_one() {
         let toc = "3 12 242457 150 18901 39738 59557 79152 100126 124833 147278 166336 182560";
         let disc = DiscId::parse(toc).expect("DiscId::parse failed");
         assert_eq!("fC1yNbC5bVjbvphqlAY9JyYoWEY-", disc.id());
@@ -728,21 +728,21 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "invalid digit found in string")]
-    fn test_parse_invalid_nan() {
+    fn discid_parse_invalid_nan() {
         let toc = "1 2 242457 150 a";
         DiscId::parse(toc).expect("DiscId::parse failed");
     }
 
     #[test]
     #[should_panic(expected = "TOC string contains too many offsets")]
-    fn test_parseinvalid_too_many_offsets() {
+    fn discid_parseinvalid_too_many_offsets() {
         let toc = "1 2 242457 150 200 300";
         DiscId::parse(&toc).expect("DiscId::parse failed");
     }
 
     #[test]
     #[should_panic(expected = "TOC string contains too many offsets")]
-    fn test_parseinvalid_too_many_offsets_total() {
+    fn discid_parseinvalid_too_many_offsets_total() {
         let mut indexes = vec!["0"; 103];
         indexes[0] = "1";
         indexes[1] = "100";
@@ -752,27 +752,27 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Number of offsets 1 does not match track count 2")]
-    fn test_parse_invalid_missing_offsets() {
+    fn discid_parse_invalid_missing_offsets() {
         let toc = "1 2 242457 150";
         DiscId::parse(toc).expect("DiscId::parse failed");
     }
 
     #[test]
     #[should_panic(expected = "Invalid TOC string")]
-    fn test_parse_invalid_not_enough_elements() {
+    fn discid_parse_invalid_not_enough_elements() {
         let toc = "1";
         DiscId::parse(toc).expect("DiscId::parse failed");
     }
 
     #[test]
     #[should_panic(expected = "cannot parse integer from empty string")]
-    fn test_parse_invalid_empty() {
+    fn discid_parse_invalid_empty() {
         let toc = "";
         DiscId::parse(toc).expect("DiscId::parse failed");
     }
 
     #[test]
-    fn test_nth_track() {
+    fn discid_nth_track() {
         let first = 1;
         let offsets = [
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
@@ -797,7 +797,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "track number out of bounds: given 11, expected between 1 and 10")]
-    fn test_nth_track_panics() {
+    fn discid_nth_track_panics() {
         let first = 1;
         let offsets = [
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
@@ -807,24 +807,24 @@ mod tests {
     }
 
     #[test]
-    fn test_default_device() {
+    fn discid_default_device() {
         let device = DiscId::default_device();
         assert!(!device.is_empty());
     }
 
     #[test]
-    fn test_has_feature() {
+    fn discid_has_feature() {
         assert_eq!(true, DiscId::has_feature(Features::READ));
     }
 
     #[test]
-    fn test_version_string() {
+    fn discid_version_string() {
         let version = DiscId::version_string();
         assert!(version.starts_with("libdiscid"));
     }
 
     #[test]
-    fn test_debug() {
+    fn discid_debug() {
         let first = 1;
         let offsets = [2000, 150, 1000];
         let disc = DiscId::put(first, &offsets).expect("DiscId::put failed");
@@ -832,7 +832,7 @@ mod tests {
     }
 
     #[test]
-    fn test_features() {
+    fn features() {
         assert_eq!(3, (Features::READ | Features::MCN).bits());
         assert_eq!(
             Features::all(),
@@ -841,7 +841,7 @@ mod tests {
     }
 
     #[test]
-    fn test_track_debug() {
+    fn track_debug() {
         let track = Track {
             number: 3,
             offset: 57402,
@@ -856,7 +856,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_new() {
+    fn disc_error_new() {
         let message = "The message";
         let error = DiscError::new(message);
 
@@ -864,13 +864,13 @@ mod tests {
     }
 
     #[test]
-    fn test_error_fmt() {
+    fn disc_error_fmt() {
         let error = DiscError::new("The message");
         assert_eq!("DiscError: The message", format!("{}", error));
     }
 
     #[test]
-    fn test_error_debug() {
+    fn disc_error_debug() {
         let error = DiscError::new("The message");
         assert_eq!(
             "DiscError { reason: \"The message\" }",
