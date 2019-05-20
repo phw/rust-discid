@@ -180,7 +180,7 @@ impl DiscId {
     /// # Examples
     ///
     /// Read from default device
-    /// ```ignore
+    /// ```no_run
     /// use discid::DiscId;
     ///
     /// let disc = DiscId::read(None).expect("Reading disc failed");
@@ -188,7 +188,7 @@ impl DiscId {
     /// ```
     ///
     /// Read from specific device
-    /// ```ignore
+    /// ```no_run
     /// # use discid::DiscId;
     /// let disc = DiscId::read(Some("/dev/sr1")).expect("Reading disc failed");
     /// println!("ID: {}", disc.id());
@@ -218,7 +218,7 @@ impl DiscId {
     /// # Examples
     ///
     /// Read both ISRC and MCN from default device
-    /// ```ignore
+    /// ```no_run
     /// use discid::{DiscId, Features};
     ///
     /// let features = Features::MCN | Features::ISRC;
