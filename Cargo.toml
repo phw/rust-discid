@@ -16,3 +16,9 @@ travis-ci = { repository = "phw/rust-discid" }
 [dependencies]
 bitflags = "1.0.4"
 discid-sys = "0.2.0"
+
+[build-dependencies]
+skeptic = "0.13"
+
+[dev-dependencies]
+skeptic = "0.13"
