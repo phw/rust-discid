@@ -620,15 +620,36 @@ mod tests {
     use super::{DiscError, DiscId, Features, Track};
 
     #[test]
+    #[ignore]
+    fn discid_read_default_device() {
+        // This test requires an actual CD inserted into the defailt CD drive.
+        let disc = DiscId::read(None).expect("DiscId::read failed");
+        assert_eq!(28, disc.id().len());
+    }
+
+    #[test]
     #[should_panic(expected = "cannot open")]
     fn discid_read_invalid_device() {
         DiscId::read(Some("notadevice")).expect("DiscId::read failed");
     }
 
     #[test]
+    #[ignore]
+    fn discid_read_features_all() {
+        // This test requires an actual CD inserted into the defailt CD drive.
+        // The CD must provide MCN and ISRC information.
+        let disc =
+            DiscId::read_features(None, Features::all()).expect("DiscId::read_features failed");
+        assert_eq!(28, disc.id().len());
+        assert!(!disc.mcn().is_empty());
+        assert_eq!(12, disc.nth_track(1).isrc.len());
+    }
+
+    #[test]
     #[should_panic(expected = "cannot open")]
     fn discid_read_features_invalid_device() {
-        DiscId::read_features(Some("notadevice"), Features::READ).expect("DiscId::read failed");
+        DiscId::read_features(Some("notadevice"), Features::READ)
+            .expect("DiscId::read_features failed");
     }
 
     #[test]
@@ -797,7 +818,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "track number out of bounds: given 11, expected between 1 and 10")]
-    fn discid_nth_track_panics() {
+    fn discid_nth_track_out_of_bounds() {
         let first = 1;
         let offsets = [
             206535, 150, 18901, 39738, 59557, 79152, 100126, 124833, 147278, 166336, 182560,
