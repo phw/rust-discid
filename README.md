@@ -18,26 +18,30 @@ This library is currently in early development and the API may still change.
 
 ### Read only the TOC
 
-```rust
+```rust,no_run
 use discid::DiscId;
 
-// Specifying the device is optional. If set to `None` a platform
-// specific default will be used.
-let device = Some("/dev/cdrom");
-let disc = DiscId::read(device).expect("Reading disc failed");
-println!("ID: {}", disc.id());
+fn main() {
+  // Specifying the device is optional. If set to `None` a platform
+  // specific default will be used.
+  let device = Some("/dev/cdrom");
+  let disc = DiscId::read(device).expect("Reading disc failed");
+  println!("ID: {}", disc.id());
+}
 ```
 
 ### Read the TOC and ISRCs
 
-```rust
+```rust,no_run
 use discid::{DiscId, Features};
 
-let disc = DiscId::read_features(None, Features::ISRC).expect("Reading disc failed");
-println!("Disc ID: {}", disc.id());
+fn main() {
+  let disc = DiscId::read_features(None, Features::ISRC).expect("Reading disc failed");
+  println!("Disc ID: {}", disc.id());
 
-for track in disc.tracks() {
+  for track in disc.tracks() {
     println!("Track #{} ISRC: {}", track.number, track.isrc);
+  }
 }
 ```
 
