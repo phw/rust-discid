@@ -839,6 +839,14 @@ mod tests {
     }
 
     #[test]
+    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
+    fn discid_has_feature_linux() {
+        assert_eq!(true, DiscId::has_feature(Features::READ));
+        assert_eq!(true, DiscId::has_feature(Features::MCN));
+        assert_eq!(true, DiscId::has_feature(Features::ISRC));
+    }
+
+    #[test]
     fn discid_version_string() {
         let version = DiscId::version_string();
         assert!(version.starts_with("libdiscid"));
