@@ -635,6 +635,7 @@ mod tests {
 
     #[test]
     #[ignore]
+    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
     fn discid_read_features_all() {
         // This test requires an actual CD inserted into the defailt CD drive.
         // The CD must provide MCN and ISRC information.
@@ -840,7 +841,7 @@ mod tests {
 
     #[test]
     #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
-    fn discid_has_feature_linux() {
+    fn discid_has_feature_all() {
         assert_eq!(true, DiscId::has_feature(Features::READ));
         assert_eq!(true, DiscId::has_feature(Features::MCN));
         assert_eq!(true, DiscId::has_feature(Features::ISRC));
