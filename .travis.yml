@@ -1,8 +1,9 @@
 language: rust
+dist: xenial
 addons:
   apt:
     packages:
-    - libdiscid0-dev
+    - libdiscid-dev
 rust:
 - stable
 - beta
