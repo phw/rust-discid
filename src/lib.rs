@@ -25,6 +25,9 @@
 //! Details about the use and calculation of disc IDs can be found at the [MusicBrainz
 //! disc ID documentation](https://musicbrainz.org/doc/Disc_ID).
 //!
+//! The source code of this library is available on [GitHub](https://github.com/phw/rust-discid)
+//! under the terms of the GNU Lesser General Public License version 3 or later.
+//!
 //! [`DiscId::read`]: ./struct.DiscId.html#method.read
 //! [`DiscId::read_features`]: ./struct.DiscId.html#method.read_features
 //! [`DiscId::put`]: ./struct.DiscId.html#method.put
@@ -79,7 +82,7 @@ bitflags! {
         /// Supports reading the ISRCs per track.
         ///
         /// For each track read the ISRC encoded in the subchannel data. Not all CDs provide this
-        /// information.  Without this feature [`Track::isrc`] will always be an empty string.
+        /// information. Without this feature [`Track::isrc`] will always be an empty string.
         ///
         /// [`Track::isrc`]: ./struct.Track.html#structfield.isrc
         const ISRC = discid_feature::DISCID_FEATURE_ISRC;
