@@ -303,7 +303,7 @@ impl DiscId {
         }
     }
 
-    /// Parses a TOC string and returns a `DiscId` instance for it.
+    /// Parses a TOC string and returns a [`DiscId`] instance for it.
     ///
     /// The TOC string provided here must have the same format as returned by [`toc_string`].
     ///
@@ -321,6 +321,7 @@ impl DiscId {
     /// assert_eq!(toc, disc.toc_string());
     /// ```
     ///
+    /// [`DiscId`]: ./struct.DiscId.html
     /// [`toc_string`]: #method.toc_string
     pub fn parse(toc: &str) -> Result<DiscId, DiscError> {
         let mut i: usize = 0;
@@ -499,7 +500,7 @@ impl DiscId {
         TrackIter::new(Rc::clone(&self.handle))
     }
 
-    /// Returns a `Track` instance for the nth track.
+    /// Returns a [`Track`] instance for the nth track.
     ///
     /// # Panics
     /// Panics if `number` is outside the range given by [`first_track_num`]
@@ -520,6 +521,7 @@ impl DiscId {
     /// assert_eq!(16960, track.sectors);
     /// ```
     ///
+    /// [`Track`]: ./struct.Track.html
     /// [`first_track_num`]: #method.first_track_num
     /// [`last_track_num`]: #method.last_track_num
     pub fn nth_track(&self, number: i32) -> Track {
