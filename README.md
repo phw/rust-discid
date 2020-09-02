@@ -9,8 +9,6 @@ discid provides Rust bindings for the MusicBrainz DiscID library [libdiscid](htt
 It allows calculating DiscIDs (MusicBrainz and freedb) for Audio CDs. Additionally
 the library can extract the MCN/UPC/EAN and the ISRCs from disc.
 
-This library is currently in early development and the API may still change.
-
 ## Requirements
 * libdiscid >= 0.6.0
 
