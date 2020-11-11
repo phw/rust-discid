@@ -265,8 +265,8 @@ impl DiscId {
     ///
     /// `first` is the track number of the first track (1-99).
     /// The `offsets` parameter points to an array which contains the track offsets for each track.
-    /// The first element, `offsets[0]`, is the leadout track. It must contain the total number of
-    /// sectors on the disc. `offsets` must not be longer than 100 elements (leadout + 99 tracks).
+    /// The first element, `offsets[0]`, is the lead-out track. It must contain the total number of
+    /// sectors on the disc. `offsets` must not be longer than 100 elements (lead-out + 99 tracks).
     ///
     /// # Examples:
     ///
@@ -634,7 +634,7 @@ mod tests {
     #[test]
     #[ignore]
     fn discid_read_default_device() {
-        // This test requires an actual CD inserted into the defailt CD drive.
+        // This test requires an actual CD inserted into the default CD drive.
         let disc = DiscId::read(None).expect("DiscId::read failed");
         assert_eq!(28, disc.id().len());
     }
@@ -649,7 +649,7 @@ mod tests {
     #[ignore]
     #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
     fn discid_read_features_all() {
-        // This test requires an actual CD inserted into the defailt CD drive.
+        // This test requires an actual CD inserted into the default CD drive.
         // The CD must provide MCN and ISRC information.
         let disc =
             DiscId::read_features(None, Features::all()).expect("DiscId::read_features failed");
