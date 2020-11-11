@@ -363,7 +363,7 @@ impl DiscId {
         if track_count != offset_count {
             return Err(DiscError::new(&format!(
                 "Number of offsets {} does not match track count {}",
-                offset_count, last_track
+                offset_count, track_count
             )));
         }
 
