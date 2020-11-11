@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Philipp Wolfer <ph.wolfer@gmail.com>
+// Copyright (C) 2019-2020 Philipp Wolfer <ph.wolfer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -69,7 +69,7 @@ bitflags! {
         /// This is supported on all platforms and indicates that only the
         /// table of contents (TOC), from which the disc ID gets calculated,
         /// will be read.
-        const READ = discid_feature::DISCID_FEATURE_READ;
+        const READ = discid_feature::DISCID_FEATURE_READ.0;
 
         /// Read the MCN (aka barcode) information.
         ///
@@ -77,7 +77,7 @@ bitflags! {
         /// Without this feature [`DiscId::mcn`] will always return an empty string.
         ///
         /// [`DiscId::mcn`]: ./struct.DiscId.html#method.mcn
-        const MCN  = discid_feature::DISCID_FEATURE_MCN;
+        const MCN  = discid_feature::DISCID_FEATURE_MCN.0;
 
         /// Supports reading the ISRCs per track.
         ///
@@ -85,7 +85,13 @@ bitflags! {
         /// information. Without this feature [`Track::isrc`] will always be an empty string.
         ///
         /// [`Track::isrc`]: ./struct.Track.html#structfield.isrc
-        const ISRC = discid_feature::DISCID_FEATURE_ISRC;
+        const ISRC = discid_feature::DISCID_FEATURE_ISRC.0;
+    }
+}
+
+impl Features {
+    fn as_bitfield(&self) -> discid_feature {
+        discid_feature(self.bits())
     }
 }
 
@@ -243,7 +249,8 @@ impl DiscId {
             Some(d) => CString::new(d).expect("CString::new failed").into_raw(),
             None => ptr::null(),
         };
-        let status = unsafe { discid_read_sparse(disc.handle.as_ptr(), c_device, features.bits()) };
+        let status =
+            unsafe { discid_read_sparse(disc.handle.as_ptr(), c_device, features.as_bitfield()) };
         if status == 0 {
             Err(disc.error())
         } else {
@@ -378,7 +385,7 @@ impl DiscId {
     /// assert!(can_read);
     /// ```
     pub fn has_feature(feature: Features) -> bool {
-        let result = unsafe { discid_has_feature(feature.bits()) };
+        let result = unsafe { discid_has_feature(feature.as_bitfield()) };
         result == 1
     }
 

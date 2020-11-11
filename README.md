@@ -55,7 +55,7 @@ Please report any issues on the
 [issue tracker](https://github.com/phw/rust-discid/issues).
 
 ## License
-discid Copyright (c) 2019 by Philipp Wolfer <ph.wolfer@gmail.com>
+discid Copyright (c) 2019-2020 by Philipp Wolfer <ph.wolfer@gmail.com>
 
 discid is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
