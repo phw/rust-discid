@@ -26,4 +26,6 @@ fn print_disc_info(disc: DiscId) {
         println!("    Offset  : {}", track.offset);
         println!("    Sectors : {}", track.sectors);
     }
+
+    println!("\nSubmit via {}", disc.submission_url());
 }
