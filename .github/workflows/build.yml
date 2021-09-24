@@ -1,0 +1,31 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ '*.*.*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install libdiscid
+      run: sudo apt-get install libdiscid-dev
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Check coding style
+      run: cargo fmt --verbose --all -- --check
+    - name: Publish to crates.io
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        CRATES_TOKEN: "${{secrets.CRATES_TOKEN}}"
+      run: cargo publish --verbose --token "$CRATES_TOKEN"
