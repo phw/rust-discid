@@ -23,7 +23,9 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Check coding style
-      run: cargo fmt --verbose --all -- --check
+      run: |
+        cargo fmt --verbose --all -- --check
+        cargo clippy --verbose -- -D warnings
     - name: Publish to crates.io
       if: startsWith(github.ref, 'refs/tags/')
       env:
