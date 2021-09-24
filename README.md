@@ -1,5 +1,4 @@
 # Rust bindings for MusicBrainz libdiscid
-[![Build Status](https://travis-ci.org/phw/rust-discid.svg?branch=master)](https://travis-ci.org/phw/rust-discid)
 [![crates.io](https://img.shields.io/crates/v/discid.svg)](https://crates.io/crates/discid)
 [![Documentation](https://docs.rs/discid/badge.svg)](https://docs.rs/discid)
 [![License](https://img.shields.io/crates/l/discid.svg)](https://crates.io/crates/discid)
