@@ -3,6 +3,8 @@
 [![Documentation](https://docs.rs/discid/badge.svg)](https://docs.rs/discid)
 [![License](https://img.shields.io/crates/l/discid.svg)](https://crates.io/crates/discid)
 
+**This project has been moved to https://git.sr.ht/~phw/rust-discid**
+
 ## About
 discid provides Rust bindings for the MusicBrainz DiscID library [libdiscid](http://musicbrainz.org/doc/libdiscid).
 It allows calculating DiscIDs (MusicBrainz and freedb) for Audio CDs. Additionally
